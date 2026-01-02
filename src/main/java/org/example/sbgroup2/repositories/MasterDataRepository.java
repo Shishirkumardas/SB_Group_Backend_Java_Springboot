@@ -98,4 +98,17 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
     FROM MasterData m
 """)
     OverallSummary getSummary();
+
+//    @Query("""
+//SELECT new org.example.sbgroup2.dto.OverallSummary(
+//    SUM(m.purchaseAmount * 0.10),
+//    SUM(cp.amount),
+//    SUM((m.purchaseAmount * 0.10) - cp.amount)
+//)
+//FROM MasterData m
+//LEFT JOIN CashbackPayment cp ON cp.masterData = m
+//WHERE m.area.id = :areaId
+//""")
+//    OverallSummary areaCashbackSummary(Long areaId);
+
 }

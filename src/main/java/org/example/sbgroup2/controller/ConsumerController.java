@@ -1,20 +1,14 @@
 package org.example.sbgroup2.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.sbgroup2.dto.ConsumerView;
 import org.example.sbgroup2.models.Area;
 import org.example.sbgroup2.models.Consumer;
-import org.example.sbgroup2.models.Payment;
 import org.example.sbgroup2.repositories.ConsumerRepository;
 import org.example.sbgroup2.repositories.MasterDataRepository;
 import org.example.sbgroup2.services.AreaService;
-import org.example.sbgroup2.services.AreaSummaryDTO;
 import org.example.sbgroup2.services.ConsumerService;
-import org.example.sbgroup2.services.PaymentService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

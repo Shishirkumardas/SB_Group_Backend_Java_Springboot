@@ -1,23 +1,21 @@
 package org.example.sbgroup2.services;
 
 import org.example.sbgroup2.ResourceNotFoundException;
-import org.example.sbgroup2.models.Area;
 import org.example.sbgroup2.models.Payment;
 import org.example.sbgroup2.repositories.AreaRepository;
 import org.example.sbgroup2.repositories.PaymentRepository;
+import org.example.sbgroup2.repositories.PaymentRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 
 @Service
 public class PaymentService {
-    @Autowired
+        @Autowired
     private PaymentRepository paymentRepository;
     private AreaRepository areaRepository;
-
+    private PaymentRequestRepository paymentRequestRepository;
 
 
     public Payment updatePayment(Long id, Payment paymentDetails) {

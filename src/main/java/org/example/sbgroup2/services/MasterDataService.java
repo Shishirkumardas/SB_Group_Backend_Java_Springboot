@@ -1,10 +1,14 @@
 package org.example.sbgroup2.services;
 
 import org.example.sbgroup2.ResourceNotFoundException;
+import org.example.sbgroup2.dto.CustomerFormDTO;
+import org.example.sbgroup2.enums.OrderStatus;
 import org.example.sbgroup2.models.MasterData;
 import org.example.sbgroup2.repositories.MasterDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 public class MasterDataService {
@@ -60,4 +64,32 @@ public class MasterDataService {
         // 🔥 update area
         areaService.recalculateArea(areaId);
     }
+    public void updatePaymentSummary(MasterData masterData, BigDecimal newPayment) {
+
+        BigDecimal paid = masterData.getPaidAmount().add(newPayment);
+        masterData.setPaidAmount(paid);
+
+        BigDecimal due = masterData.getPurchaseAmount().subtract(paid);
+
+        if (due.compareTo(BigDecimal.ZERO) <= 0) {
+            masterData.setStatus(OrderStatus.PAID);
+        } else if (paid.compareTo(BigDecimal.ZERO) > 0) {
+            masterData.setStatus(OrderStatus.PARTIALLY_PAID);
+        } else {
+            masterData.setStatus(OrderStatus.PENDING);
+        }
+
+        masterDataRepository.save(masterData);
+    }
+    public MasterData saveCustomerForm(Long id, CustomerFormDTO dto) {
+        MasterData md = masterDataRepository.findById(id).orElseThrow();
+
+        md.setName(dto.getCustomerName());
+        md.setPaymentMethod(dto.getPaymentMethod());
+        md.setPaidAmount(dto.getAmount());
+        md.setDate(dto.getPaymentDate());
+
+        return masterDataRepository.save(md);
+    }
+
 }

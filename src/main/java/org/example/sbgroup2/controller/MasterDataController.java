@@ -1,10 +1,7 @@
 package org.example.sbgroup2.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.sbgroup2.dto.ConsumerView;
-import org.example.sbgroup2.dto.OverallSummary;
-import org.example.sbgroup2.dto.PaymentView;
-import org.example.sbgroup2.dto.PurchaseView;
+import org.example.sbgroup2.dto.*;
 import org.example.sbgroup2.models.Area;
 import org.example.sbgroup2.models.MasterData;
 import org.example.sbgroup2.repositories.MasterDataRepository;
@@ -42,6 +39,14 @@ public class MasterDataController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either id or name must be provided");
         }
     }
+    @PostMapping("/customer/{masterId}/form")
+    public MasterData saveCustomerForm(
+            @PathVariable Long masterId,
+            @RequestBody CustomerFormDTO dto
+    ) {
+        return masterDataService.saveCustomerForm(masterId, dto);
+    }
+
 
     @PutMapping("/{id}")
     public MasterData updateMasterData(@PathVariable Long id, @RequestBody MasterData masterData) {

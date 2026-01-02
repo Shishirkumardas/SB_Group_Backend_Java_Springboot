@@ -12,5 +12,5 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
 
-
+    List<Payment> findByMasterDataId(Long masterDataId);
 }
