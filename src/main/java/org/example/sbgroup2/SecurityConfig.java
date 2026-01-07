@@ -106,6 +106,11 @@ public CorsConfigurationSource corsConfigurationSource() {
                         .requestMatchers("/api/master-data/**").permitAll()
                         .requestMatchers("/api/customer/**").permitAll()
                         .requestMatchers("/api/customer/submit").permitAll()
+                        .requestMatchers("/api/cashback/**").permitAll()
+                        .requestMatchers("/api/payments/**").permitAll()
+                        .requestMatchers("/api/consumers/**").permitAll()
+                        .requestMatchers("/api/summary/**").permitAll()
+                        .requestMatchers("/api/daily-expenses/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -15,10 +15,18 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:default-development-secret-key-32-chars!!}")
     private String secret;
 
+    @Value("${jwt.expiration:86400000}")
+    private long expiration;
+
     private Key getSigningKey() {
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException(
+                    "JWT secret key must be at least 32 characters"
+            );
+        }
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -27,7 +35,7 @@ public class JwtService {
                 .setSubject(user.getEmail())
                 .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -40,3 +48,4 @@ public class JwtService {
                 .getBody();
     }
 }
+
