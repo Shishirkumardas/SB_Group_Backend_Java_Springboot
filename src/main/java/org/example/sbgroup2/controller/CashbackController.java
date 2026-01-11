@@ -24,7 +24,7 @@ public class CashbackController {
     @GetMapping("/{masterId}")
     public CashbackDetailsDTO getDetails(@PathVariable Long masterId) {
         MasterData master = masterRepo.findById(masterId).orElseThrow();
-        return cashbackService.calculateCashback(master);
+        return cashbackService.calculateCashback2(master);
     }
 
     @PostMapping("/{masterId}/pay")

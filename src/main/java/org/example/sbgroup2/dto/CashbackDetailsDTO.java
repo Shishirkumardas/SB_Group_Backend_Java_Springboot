@@ -9,11 +9,12 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class CashbackDetailsDTO {
+    private LocalDate purchaseDate;
 
     private LocalDate cashbackStartDate;
     private LocalDate firstDueMonth;
     private LocalDate lastDueMonth;
-
+//
     private BigDecimal expectedMonthlyCashbackAmount;
 
     private BigDecimal missedCashbackAmount;

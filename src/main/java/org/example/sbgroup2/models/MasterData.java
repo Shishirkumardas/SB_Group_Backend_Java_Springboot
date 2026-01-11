@@ -1,5 +1,6 @@
 package org.example.sbgroup2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.sbgroup2.enums.OrderStatus;
@@ -28,31 +29,30 @@ public class MasterData {
             orphanRemoval = true
     )
     private List<Payment> payments;
-
+    private BigDecimal quantity;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.PENDING;
 
     private BigDecimal phone;
+    private BigDecimal bkashNumber;
+    private BigDecimal rocketNumber;
+    private BigDecimal nogodNumber;
     private BigDecimal nid;
     private LocalDate date;
     private BigDecimal purchaseAmount;
     private BigDecimal paidAmount;
     private BigDecimal dueAmount;
     private BigDecimal cashBackAmount;
+    private String remarks;
     public boolean PaymentCompleted;
+    private BigDecimal amountBackFromPurchase;
 
     @PrePersist
     @PreUpdate
     public void calculateDue() {
-        if (paidAmount == null) {
-            paidAmount = BigDecimal.ZERO;
-        }
-        if (purchaseAmount == null) {
-            purchaseAmount = BigDecimal.ZERO;
-        }
-        this.dueAmount = purchaseAmount.subtract(paidAmount);
+        this.dueAmount=amountBackFromPurchase;
     }
     public boolean isPaymentCompleted() {
         if (paidAmount == null || purchaseAmount == null) {

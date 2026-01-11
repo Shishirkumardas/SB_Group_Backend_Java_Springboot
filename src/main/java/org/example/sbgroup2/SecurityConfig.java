@@ -96,6 +96,7 @@ public CorsConfigurationSource corsConfigurationSource() {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -113,6 +114,7 @@ public CorsConfigurationSource corsConfigurationSource() {
                         .requestMatchers("/api/daily-expenses/**").permitAll()
                         .requestMatchers("/api/accounts/**").permitAll()
                         .requestMatchers("/api/calls/**").permitAll()
+                        .requestMatchers("/api/file-upload/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

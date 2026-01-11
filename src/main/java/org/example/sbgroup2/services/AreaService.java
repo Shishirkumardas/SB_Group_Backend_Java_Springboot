@@ -75,6 +75,23 @@ public class AreaService {
         return areaRepository.save(area);
     }
 
+    @Transactional
+    public Area getOrCreateArea(String areaName) {
+        Area area = areaRepository.findByName(areaName);
+
+        if (area == null) {
+            area = new Area();
+            area.setName(areaName);
+            area.setPurchaseAmount(BigDecimal.ZERO);
+            area.setPaidAmount(BigDecimal.ZERO);
+            area.setDueAmount(BigDecimal.ZERO);
+
+            area = areaRepository.save(area);
+        }
+
+        return area;
+    }
+
 
 
     public void deleteArea(Long id) {

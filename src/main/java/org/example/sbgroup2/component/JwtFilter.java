@@ -15,9 +15,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
+
 import java.util.List;
-import java.util.Optional;
+
+
+
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -34,6 +36,18 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws IOException, ServletException {
+
+        // ✅ GET REQUEST PATH CORRECTLY
+        String path = request.getServletPath();
+
+        // ✅ BYPASS JWT FILTER FOR PUBLIC ENDPOINTS
+        if (
+                path.startsWith("/api/auth/") ||
+                        path.startsWith("/api/file-upload/")
+        ) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String token = null;
 
@@ -72,6 +86,5 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
 }
 
