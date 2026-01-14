@@ -9,7 +9,9 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class CashbackDetailsDTO {
+    private String name;
     private LocalDate purchaseDate;
+    private BigDecimal totalPurchase;
 
     private LocalDate cashbackStartDate;
     private LocalDate firstDueMonth;

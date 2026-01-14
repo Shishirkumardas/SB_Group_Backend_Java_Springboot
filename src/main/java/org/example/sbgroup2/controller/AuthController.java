@@ -1,6 +1,7 @@
 package org.example.sbgroup2.controller;
 
 
+import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.LoginRequest;
 import org.example.sbgroup2.dto.SignupRequest;
 import org.example.sbgroup2.enums.Role;
@@ -8,8 +9,10 @@ import org.example.sbgroup2.models.User;
 import org.example.sbgroup2.repositories.UserRepository;
 import org.example.sbgroup2.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +23,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3001")
+@CrossOrigin(origins = "${frontend.origin:http://localhost:3001}", allowCredentials = "true")
+@RequiredArgsConstructor
 public class AuthController {
 
     @Autowired
@@ -47,11 +51,13 @@ public class AuthController {
         user.setId(UUID.randomUUID().toString());
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
-        user.setRole(req.getRole() == null ? Role.CUSTOMER : req.getRole());
+
+        // Default to CUSTOMER – never let client decide admin role!
+        user.setRole(Role.CUSTOMER); // ← CHANGE: remove req.getRole() in production!
 
         userRepo.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "User registered"));
+        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
     }
 
     /* =========================
@@ -102,6 +108,8 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+        cookie.setSecure(true);
+
 
         response.addCookie(cookie);
 
@@ -111,19 +119,36 @@ public class AuthController {
     /* =========================
        CURRENT USER
        ========================= */
+//    @GetMapping("/me")
+//    public ResponseEntity<?> me(Authentication authentication) {
+//
+//        if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
+//            return ResponseEntity.status(401).build();
+//        }
+//
+//        return ResponseEntity.ok(
+//                Map.of(
+//                        "id", user.getId(),
+//                        "email", user.getEmail(),
+//                        "role", user.getRole().name()
+//                )
+//        );
+//    }
     @GetMapping("/me")
-    public ResponseEntity<?> me(Authentication authentication) {
+    public ResponseEntity<?> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
-            return ResponseEntity.status(401).build();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "id", user.getId(),
-                        "email", user.getEmail(),
-                        "role", user.getRole().name()
-                )
-        );
+        User user = (User) auth.getPrincipal();
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "role", user.getRole().name()
+        ));
     }
+
 }

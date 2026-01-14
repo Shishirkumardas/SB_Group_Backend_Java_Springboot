@@ -21,58 +21,59 @@ public class CashbackService {
 
     private final CashbackPaymentRepository cashbackRepo;
 
-    public CashbackDetailsDTO calculateCashback(MasterData master) {
-
-        BigDecimal purchaseAmount = master.getPurchaseAmount();
-        LocalDate purchaseDate = master.getDate();
-
-        if (purchaseAmount == null || purchaseAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return null;
-        }
-
-        BigDecimal monthlyCashback = purchaseAmount.multiply(BigDecimal.valueOf(0.10));
-        LocalDate cashbackStartDate = purchaseDate.plusDays(30);
-
-        BigDecimal totalPaid = cashbackRepo
-                .findByMasterDataId(master.getId())
-                .stream()
-                .map(CashbackPayment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        long totalMonths = purchaseAmount.divide(monthlyCashback).longValue();
-        long paidMonths = totalPaid.divide(monthlyCashback, 0, RoundingMode.DOWN).longValue();
-
-        LocalDate today = LocalDate.now();
-
-        long monthsPassed = cashbackStartDate.isAfter(today)
-                ? 0
-                : ChronoUnit.MONTHS.between(cashbackStartDate, today) + 1;
-
-        long missedMonths = Math.max(0, monthsPassed - paidMonths);
-        BigDecimal missedAmount = monthlyCashback.multiply(BigDecimal.valueOf(missedMonths));
-
-        boolean completed = paidMonths >= totalMonths;
-
-        LocalDate nextDueDate = completed
-                ? null
-                : cashbackStartDate.plusMonths(paidMonths);
-
-        return new CashbackDetailsDTO(
-                purchaseDate,
-                cashbackStartDate,
-                cashbackStartDate,
-                cashbackStartDate.plusMonths(totalMonths - 1),
-                monthlyCashback,
-                missedAmount,
-                missedMonths,
-                missedMonths > 0 ? cashbackStartDate.plusMonths(paidMonths) : null,
-                nextDueDate,
-                completed ? BigDecimal.ZERO : monthlyCashback,
-                nextDueDate,
-                cashbackStartDate,
-                completed ? "COMPLETED" : missedMonths > 0 ? "OVERDUE" : "ACTIVE"
-        );
-    }
+//    public CashbackDetailsDTO calculateCashback(MasterData master) {
+//
+//        BigDecimal purchaseAmount = master.getPurchaseAmount();
+//        LocalDate purchaseDate = master.getDate();
+//
+//        if (purchaseAmount == null || purchaseAmount.compareTo(BigDecimal.ZERO) <= 0) {
+//            return null;
+//        }
+//
+//        BigDecimal monthlyCashback = purchaseAmount.multiply(BigDecimal.valueOf(0.10));
+//        LocalDate cashbackStartDate = purchaseDate.plusDays(30);
+//
+//        BigDecimal totalPaid = cashbackRepo
+//                .findByMasterDataId(master.getId())
+//                .stream()
+//                .map(CashbackPayment::getAmount)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        long totalMonths = purchaseAmount.divide(monthlyCashback).longValue();
+//        long paidMonths = totalPaid.divide(monthlyCashback, 0, RoundingMode.DOWN).longValue();
+//
+//        LocalDate today = LocalDate.now();
+//
+//        long monthsPassed = cashbackStartDate.isAfter(today)
+//                ? 0
+//                : ChronoUnit.MONTHS.between(cashbackStartDate, today) + 1;
+//
+//        long missedMonths = Math.max(0, monthsPassed - paidMonths);
+//        BigDecimal missedAmount = monthlyCashback.multiply(BigDecimal.valueOf(missedMonths));
+//
+//        boolean completed = paidMonths >= totalMonths;
+//
+//        LocalDate nextDueDate = completed
+//                ? null
+//                : cashbackStartDate.plusMonths(paidMonths);
+//
+//        return new CashbackDetailsDTO(
+//                purchaseDate,
+//
+//                cashbackStartDate,
+//                cashbackStartDate,
+//                cashbackStartDate.plusMonths(totalMonths - 1),
+//                monthlyCashback,
+//                missedAmount,
+//                missedMonths,
+//                missedMonths > 0 ? cashbackStartDate.plusMonths(paidMonths) : null,
+//                nextDueDate,
+//                completed ? BigDecimal.ZERO : monthlyCashback,
+//                nextDueDate,
+//                cashbackStartDate,
+//                completed ? "COMPLETED" : missedMonths > 0 ? "OVERDUE" : "ACTIVE"
+//        );
+//    }
 
     //For Excel Reading
     public CashbackDetailsDTO calculateCashback2(MasterData master) {
@@ -83,6 +84,7 @@ public class CashbackService {
         }
 
         BigDecimal totalPurchase = master.getPurchaseAmount();
+        String name =master.getName();
         LocalDate purchaseDate = master.getDate();
         LocalDate today = LocalDate.now(); // 2026-01-10 in your case
 
@@ -142,7 +144,9 @@ public class CashbackService {
 
         // 7. Build DTO (adjust fields according to your actual DTO structure)
         return new CashbackDetailsDTO(
+                name,
                 purchaseDate,
+                totalPurchase,
                 firstExpectedPayment,                    // startDate
                 firstExpectedPayment,                    // firstDueDate
                 firstExpectedPayment.plusMonths(10),     // estimated end date (10 months typical)
@@ -160,7 +164,7 @@ public class CashbackService {
 
     private CashbackDetailsDTO createEmptyDetails() {
         return new CashbackDetailsDTO(
-                null, null, null, null, BigDecimal.ZERO,
+                "NOT_STARTED",null, BigDecimal.ZERO,null, null, null, BigDecimal.ZERO,
                 BigDecimal.ZERO, 0, null, null,
                 BigDecimal.ZERO, null, null, "NOT_STARTED"
         );

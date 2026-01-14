@@ -34,35 +34,6 @@ public class FileUploadController {
         return ResponseEntity.ok("Master data uploaded successfully");
     }
 
-//    @PostMapping(value = "/excel/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<Map<String, Object>> previewExcelImport(@RequestParam("file") MultipartFile file) {
-//        if (file.isEmpty()) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of("error", "No file uploaded"));
-//        }
-//
-//        if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of("error", "Only .xlsx files are supported"));
-//        }
-//
-//        try {
-//            // For preview we can reuse most of the logic but skip saving
-//            List<MasterData> previewData = fileUploaderService.previewExcel(file); // ← new method we'll create
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "status", "preview_success",
-//                    "recordsCount", previewData.size(),
-//                    "data", previewData
-//            ));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of(
-//                            "status", "error",
-//                            "message", e.getMessage()
-//                    ));
-//        }
-//    }
 
     /**
      * Main import endpoint - actually saves data to database

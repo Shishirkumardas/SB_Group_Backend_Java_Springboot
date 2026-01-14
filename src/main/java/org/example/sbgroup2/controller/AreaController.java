@@ -2,11 +2,12 @@ package org.example.sbgroup2.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.models.Area;
-import org.example.sbgroup2.models.Area;
+
 import org.example.sbgroup2.repositories.AreaRepository;
 import org.example.sbgroup2.services.AreaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,17 +38,19 @@ public class AreaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')") // Only admin can create
     public Area createArea(@RequestBody Area area) {
         return areaService.createArea(area);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Only admin can update
     public Area updateArea(@PathVariable Long id, @RequestBody Area area) {
         return areaService.updateArea(id, area);
     }
 
-
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')") // Only admin can delete
     public ResponseEntity<?> deleteArea(@PathVariable Long id) {
         areaService.deleteArea(id);
         return ResponseEntity.ok().body("Area deleted successfully");

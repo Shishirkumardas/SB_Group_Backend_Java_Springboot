@@ -5,12 +5,13 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Data
-@AllArgsConstructor
-public class DashboardSummaryDTO {
-    private BigDecimal totalPurchase;
-    private BigDecimal totalPaid;
-    private BigDecimal totalDue;
-    private double paidPercent;
-}
+public record DashboardSummaryDTO(
+        BigDecimal totalPurchase,
+        BigDecimal totalPaid,
+        BigDecimal totalDue,
+        double paidPercent,
+        BigDecimal totalCashbackPaid,
+        long totalConsumers,
+        BigDecimal averagePurchase
+) {}
 

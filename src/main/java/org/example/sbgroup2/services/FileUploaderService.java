@@ -60,54 +60,7 @@ public class FileUploaderService {
                 throw new IllegalArgumentException("No sheet found in Excel");
             }
 
-            // Step A: Read Header → Map Month Columns for Cashback
-//            Map<Integer, YearMonth> cashbackColumns = new HashMap<>();
-//            Row header = sheet.getRow(1);
-//            if (header == null) {
-//                throw new IllegalArgumentException("No header row");
-//            }
-//
-//            for (int col = header.getFirstCellNum(); col < header.getLastCellNum(); col++) {
-//                Cell cell = header.getCell(col);
-//                if (cell == null || cell.getCellType() != CellType.STRING) continue;
-//
-//                String text = cell.getStringCellValue().trim();
-//                if (text.matches("[A-Za-z]{3}-\\d{2}")) {
-//                    YearMonth ym = YearMonth.parse(
-//                            text,
-//                            DateTimeFormatter.ofPattern("MMM-yy", Locale.ENGLISH)
-//                    );
-//                    cashbackColumns.put(col, ym);
-//                }
-//            }
-//
-            // Step A: Detect month columns - start from column 12 (your known range)
-//            Map<Integer, YearMonth> cashbackColumns = new HashMap<>();
-//            Row header = sheet.getRow(1); // header is row 2 (index 1)
-//            if (header == null) throw new IllegalArgumentException("Header row not found");
-//
-//// Explicitly scan from column 12 to 30 (safe range for Oct-25 to Oct-26 + buffer)
-//            for (int col = 12; col <= 30; col++) { // adjust end if you have more months
-//                Cell cell = header.getCell(col);
-//                if (cell == null || cell.getCellType() != CellType.STRING) continue;
-//
-//                String text = cell.getStringCellValue().trim();
-//                if (text.matches("(?i)[A-Za-z]{3}-\\d{2}")) { // case-insensitive
-//                    try {
-//                        YearMonth ym = YearMonth.parse(text, DateTimeFormatter.ofPattern("MMM-yy", Locale.ENGLISH));
-//                        cashbackColumns.put(col, ym);
-//                        // Debug: see which months are found
-//                        System.out.println("Detected cashback column: " + text + " → " + ym + " (col " + col + ")");
-//                    } catch (Exception e) {
-//                        System.out.println("Invalid month format at col " + col + ": " + text);
-//                    }
-//                }
-//            }
-//
-//            if (cashbackColumns.isEmpty()) {
-//                System.out.println("WARNING: No cashback month columns found (starting from col 12)");
-//            }
-//
+
             Map<Integer, YearMonth> cashbackColumns = new HashMap<>();
 
             Row header = sheet.getRow(1);
@@ -395,20 +348,6 @@ public class FileUploaderService {
         };
     }
 
-//    private BigDecimal getCellBigDecimalValue(Cell cell) {
-//        if (cell == null) return BigDecimal.ZERO;
-//        return switch (cell.getCellType()) {
-//            case NUMERIC -> BigDecimal.valueOf(cell.getNumericCellValue());
-//            case STRING -> {
-//                try {
-//                    yield new BigDecimal(cell.getStringCellValue().trim());
-//                } catch (NumberFormatException e) {
-//                    yield BigDecimal.ZERO;
-//                }
-//            }
-//            default -> BigDecimal.ZERO;
-//        };
-//    }
 
     private BigDecimal getCellBigDecimalValue(Cell cell) {
         if (cell == null) return BigDecimal.ZERO;
@@ -485,116 +424,5 @@ public class FileUploaderService {
 
         return null;
     }
-
-
-
-//    /**
-//     * Preview mode: reads Excel and returns parsed MasterData objects without saving
-//     */
-//    @Transactional // just in case
-//    public List<MasterData> previewExcel(MultipartFile file) {
-//        List<MasterData> previewList = new ArrayList<>();
-//
-//        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
-//            Sheet sheet = workbook.getSheetAt(0);
-//            if (sheet == null) throw new IllegalArgumentException("No sheet found");
-//
-//            // Same header detection logic as your import
-//            Map<Integer, YearMonth> cashbackColumns = new HashMap<>();
-//            Row header = sheet.getRow(1); // your header is on row 2 (index 1)
-//            if (header == null) throw new IllegalArgumentException("No header row");
-//
-//            for (int col = 12; col < 24; col++) {
-//                Cell cell = header.getCell(col);
-//                if (cell == null || cell.getCellType() != CellType.STRING) continue;
-//
-//                String headerText = cell.getStringCellValue().trim();
-//                if (headerText.matches("[A-Za-z]{3}-\\d{2}")) {
-//                    try {
-//                        YearMonth ym = YearMonth.parse(
-//                                headerText,
-//                                DateTimeFormatter.ofPattern("MMM-yy", Locale.ENGLISH)
-//                        );
-//                        cashbackColumns.put(col, ym);
-//                    } catch (Exception ignored) {}
-//                }
-//            }
-//
-//            // Same row processing (without save!)
-//            for (int r = 2; r <= sheet.getLastRowNum(); r++) { // assuming data starts from row 3
-//                Row row = sheet.getRow(r);
-//                if (row == null || isRowEmpty(row)) continue;
-//
-//                MasterData master = new MasterData();
-//                // Fixed columns (adjust indices as per your Excel structure)
-//                int CONSUMER_NAME_COL = 1;
-//                int QUANTITY_COL = 2;
-//                int DATE_COL = 3;
-//                int NID_COL = 4;
-//                int BKASH_COL = 12;
-//                int ROCKET_COL = 13;
-//                int NAG_COL = 14;
-//                int REMARKS_COL = 15;
-//                int AREA_CODE_COL = 9;
-//                int PURCHASE_COL = 10;
-//                int PAID_COL = 11;
-//
-//
-//
-//                BigDecimal quantity = getCellBigDecimalValue(row.getCell(QUANTITY_COL));
-//                LocalDate purchaseDate = getCellLocalDateValue(row.getCell(DATE_COL));
-//                BigDecimal nid = getCellBigDecimalValue(row.getCell(NID_COL));
-//                //Payment numbers (keep as BigDecimal)
-//                BigDecimal bkashNumber  = getCellBigDecimalValue(row.getCell(BKASH_COL));
-//                BigDecimal rocketNumber = getCellBigDecimalValue(row.getCell(ROCKET_COL));
-//                BigDecimal nagodNumber  = getCellBigDecimalValue(row.getCell(NAG_COL));
-//
-//                String areaCode = getCellStringValue(row.getCell(AREA_CODE_COL));
-//                BigDecimal purchaseAmount = getCellBigDecimalValue(row.getCell(PURCHASE_COL));
-//                BigDecimal paidAmount = getCellBigDecimalValue(row.getCell(PAID_COL));
-//                Area area = areaService.getOrCreateArea(areaCode); // Or get by code/name
-//                master.setArea(area);
-//
-//                // Priority selection for main phone
-//                BigDecimal selectedPhone = null;
-//
-//                if (bkashNumber != null && bkashNumber.compareTo(BigDecimal.ZERO) > 0) {
-//                    selectedPhone = bkashNumber;
-//                } else if (rocketNumber != null && rocketNumber.compareTo(BigDecimal.ZERO) > 0) {
-//                    selectedPhone = rocketNumber;
-//                } else if (nagodNumber != null && nagodNumber.compareTo(BigDecimal.ZERO) > 0) {
-//                    selectedPhone = nagodNumber;
-//                }
-//
-//                master.setName(getCellStringValue(row.getCell(CONSUMER_NAME_COL)));
-//                master.setPhone(selectedPhone);
-//                master.setBkashNumber(bkashNumber);
-//                master.setRocketNumber(rocketNumber);
-//                master.setNogodNumber(nagodNumber);
-//                master.setRemarks(getCellStringValue(row.getCell(REMARKS_COL)));
-//                master.setNid(nid);
-//                master.setQuantity(quantity);
-//                master.setPurchaseAmount(purchaseAmount);
-//                master.setPaidAmount(paidAmount);
-//                master.setDueAmount(purchaseAmount.subtract(paidAmount));
-//                master.setDate(purchaseDate);
-//
-//                // You can even simulate cashback payments list for preview
-//                 List<BigDecimal> cashbackPreview = new ArrayList<>();
-//                 for (int col : cashbackColumns.keySet()) {
-//                     BigDecimal val = getCellBigDecimalValue(row.getCell(col));
-//                     if (val.compareTo(BigDecimal.ZERO) > 0) cashbackPreview.add(val);
-//                 }
-//
-//                previewList.add(master);
-//            }
-//
-//            return previewList;
-//        } catch (IOException e) {
-//            throw new RuntimeException("Failed to preview Excel", e);
-//        }
-//    }
-
-
 
 }

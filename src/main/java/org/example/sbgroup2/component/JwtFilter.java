@@ -41,13 +41,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // ✅ BYPASS JWT FILTER FOR PUBLIC ENDPOINTS
+//        String path = request.getServletPath();
+
+// ✅ Bypass ONLY truly public auth endpoints
         if (
-                path.startsWith("/api/auth/") ||
+                        path.equals("/api/auth/login") ||
+                        path.equals("/api/auth/signup") ||
+                        path.equals("/api/auth/logout") ||
                         path.startsWith("/api/file-upload/")
         ) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         String token = null;
 
@@ -69,11 +75,19 @@ public class JwtFilter extends OncePerRequestFilter {
                         .orElse(null);
 
                 if (user != null) {
+                    var authorities = List.of(
+                            new SimpleGrantedAuthority("ROLE_"+user.getRole().name())
+                    );
+
+
+                    // Option 2: without prefix (if you prefer)
+                    // var authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
+
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
-                                    user,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority(user.getRole().name()))
+                                    user,           // principal
+                                    null,           // credentials
+                                    authorities
                             );
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
@@ -86,5 +100,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+//    private String getTokenFromCookie(HttpServletRequest request) {
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if ("token".equals(cookie.getName())) {
+//                    return cookie.getValue();
+//                }
+//            }
+//        }
+//        return null;
+//    }
 }
 

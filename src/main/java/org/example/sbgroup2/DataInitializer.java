@@ -13,6 +13,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class DataInitializer {
@@ -26,6 +28,7 @@ public class DataInitializer {
         if (userRepo.findByEmail("admin@sbgroup.com")==null) {
 
             User admin = new User();
+            admin.setId(UUID.randomUUID().toString());
             admin.setEmail("admin@sbgroup.com");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(Role.ADMIN);
