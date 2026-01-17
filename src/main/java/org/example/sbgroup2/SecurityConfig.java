@@ -4,13 +4,16 @@ import org.example.sbgroup2.component.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,25 +29,41 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3001",
+
+        // ← Add BOTH common Next.js ports + your actual one
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",           // ← most common Next.js port
+                "http://localhost:3001",           // ← your current one
+                "http://192.168.68.107:3000",
                 "http://192.168.68.107:3001",
-                "http://192.168.68.107")); // ← your Next.js frontend
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie")); // useful for debug
+                "http://172.16.0.2:3001"
+        ));
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "token"));
+        config.setExposedHeaders(Arrays.asList("Set-Cookie","Authorization"));
+        // helpful for debugging
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -52,40 +71,53 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-//                .csrf(csrf -> csrf.disable())
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/logout").permitAll()
-                                .requestMatchers("/api/auth/me").authenticated()
-                                .requestMatchers("/api/areas/**").permitAll()// or .authenticated() for testing
-                                .requestMatchers("/api/master-data/**").permitAll()
-                                .requestMatchers("/api/customer/**").permitAll()
-                                .requestMatchers("/api/customer/submit").permitAll()
-                                .requestMatchers("/api/cashback/**").permitAll()
-                                .requestMatchers("/api/payments/**").permitAll()
-                                .requestMatchers("/api/consumers/**").permitAll()
-                                .requestMatchers("/api/summary/**").permitAll()
-                                .requestMatchers("/api/daily-expenses/**").permitAll()
-                                .requestMatchers("/api/accounts/**").permitAll()
-                                .requestMatchers("/api/calls/**").permitAll()
-                                .requestMatchers("/api/file-upload/**").permitAll()
-                                .requestMatchers("/api/dashboard/**").permitAll()
-                                .requestMatchers("/api/areas/area-summary/daily").permitAll()
-//                                .requestMatchers(
-//                                        "/api/areas/**",
-//                                "/api/master-data/**",
-//                                "/api/admin/**"
-////                                "/api/users/**",                   // manage users
-////                                "/api/reports/**",                 // admin reports
-////                                "/api/settings/**"                 // system settings
-//                                ).hasRole("ADMIN")
-                                .anyRequest().authenticated()
+                        // Always allow preflight OPTIONS requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public auth endpoints
+                        .requestMatchers("/api/auth/login",
+                                "/api/auth/signup",
+                                "/api/auth/logout").permitAll()
+
+                        // Protected but needs authentication
+                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+
+
+                        // For development – you can tighten later
+                        .requestMatchers(
+                                "/api/areas/**",
+                                "/api/master-data/**",
+//                                "/api/customer/**",
+//                                "/api/customer/submit",
+                                "/api/cashback/**",
+                                "/api/payments/**",
+                                "/api/consumers/**",
+                                "/api/summary/**",
+                                "/api/daily-expenses/**",
+                                "/api/accounts/**",
+                                "/api/calls/**",
+                                "/api/file-upload/**",
+                                "/api/dashboard/**",
+                                "/api/dashboard/summary",
+                                "/api/areas/area-summary/daily"
+                        ).hasRole("ADMIN")
+
+                        // Everything else requires authentication
+                        .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

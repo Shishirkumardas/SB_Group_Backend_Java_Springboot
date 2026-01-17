@@ -1,18 +1,25 @@
 package org.example.sbgroup2.controller;
 
 
+import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.LoginRequest;
 import org.example.sbgroup2.dto.SignupRequest;
 import org.example.sbgroup2.enums.Role;
+import org.example.sbgroup2.models.CustomUserDetails;
 import org.example.sbgroup2.models.User;
 import org.example.sbgroup2.repositories.UserRepository;
 import org.example.sbgroup2.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,126 +30,99 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "${frontend.origin:http://localhost:3001}", allowCredentials = "true")
 @RequiredArgsConstructor
+@CrossOrigin(
+        origins = "${frontend.origin:http://localhost:3001}",
+        allowCredentials = "true",
+        allowedHeaders = "*",
+        exposedHeaders = "Set-Cookie"
+)
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepo;
+    private final UserRepository userRepo;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;           // ← use interface
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    /* =========================
-       SIGN UP
-       ========================= */
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest req) {
+    public ResponseEntity<?> signup(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
 
-        if (userRepo.existsByEmail(req.getEmail())) {
+        if (StringUtils.isBlank(email) || StringUtils.isBlank(password)) {
             return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Email and password are required"));
+        }
+
+        email = email.trim().toLowerCase();
+
+        if (userRepo.existsByEmail(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", "Email already exists"));
         }
 
         User user = new User();
         user.setId(UUID.randomUUID().toString());
-        user.setEmail(req.getEmail());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
-
-        // Default to CUSTOMER – never let client decide admin role!
-        user.setRole(Role.CUSTOMER); // ← CHANGE: remove req.getRole() in production!
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(Role.CUSTOMER);  // ← HARDCODED — never trust client!
 
         userRepo.save(user);
 
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "Account created successfully"));
     }
 
-    /* =========================
-       LOGIN
-       ========================= */
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @RequestBody LoginRequest req,
-            HttpServletResponse response
-    ) {
-//        User user = userRepo.findByEmail(req.getEmail())
-//                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-        User user = userRepo.findByEmail(req.getEmail());
-        if (user == null) {
-            throw new RuntimeException("Invalid credentials");
-        }
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request, HttpServletResponse response) {
+        String email = request.get("email");
+        String password = request.get("password");
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Invalid pass"));
-        }
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+
+        User user = userRepo.findByEmail(email).orElseThrow();
 
         String token = jwtService.generateToken(user);
 
         Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // set true in production (HTTPS)
+        cookie.setSecure(false); // ⚠ false for localhost
         cookie.setPath("/");
-        cookie.setMaxAge(60 * 60); // 1 hour
-
+        cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+        cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "role", user.getRole().name(),
-                        "email", user.getEmail()
-                )
-        );
+        return ResponseEntity.ok(Map.of(
+                "message", "Login successful",
+                "email", user.getEmail(),
+                "role", user.getRole().name()
+        ));
     }
 
-    /* =========================
-       LOGOUT
-       ========================= */
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-
-        Cookie cookie = new Cookie("token", "");
+        Cookie cookie = new Cookie("token", null);
         cookie.setHttpOnly(true);
+        cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setSecure(true);
-
-
+        cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(Map.of("message", "Logged out"));
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
-    /* =========================
-       CURRENT USER
-       ========================= */
-//    @GetMapping("/me")
-//    public ResponseEntity<?> me(Authentication authentication) {
-//
-//        if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
-//            return ResponseEntity.status(401).build();
-//        }
-//
-//        return ResponseEntity.ok(
-//                Map.of(
-//                        "id", user.getId(),
-//                        "email", user.getEmail(),
-//                        "role", user.getRole().name()
-//                )
-//        );
-//    }
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<?> me(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
         }
 
-        User user = (User) auth.getPrincipal();
+        String email = authentication.getName(); // email from Spring Security
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),
@@ -150,5 +130,7 @@ public class AuthController {
                 "role", user.getRole().name()
         ));
     }
+
+
 
 }

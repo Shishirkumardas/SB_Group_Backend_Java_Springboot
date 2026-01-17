@@ -1,112 +1,102 @@
 package org.example.sbgroup2.component;
 
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.sbgroup2.models.User;
-import org.example.sbgroup2.repositories.UserRepository;
+import org.example.sbgroup2.services.CustomUserDetailsService;
 import org.example.sbgroup2.services.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    JwtService jwtService;
+    private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
 
     @Autowired
-    UserRepository userRepo;
+    private JwtService jwtService;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    // Paths that don't need auth
+    private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/api/auth/login",
+            "/api/auth/signup",
+            "/api/auth/logout"
+    );
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // ✅ GET REQUEST PATH CORRECTLY
-        String path = request.getServletPath();
-
-        // ✅ BYPASS JWT FILTER FOR PUBLIC ENDPOINTS
-//        String path = request.getServletPath();
-
-// ✅ Bypass ONLY truly public auth endpoints
-        if (
-                        path.equals("/api/auth/login") ||
-                        path.equals("/api/auth/signup") ||
-                        path.equals("/api/auth/logout") ||
-                        path.startsWith("/api/file-upload/")
-        ) {
+        String path = request.getRequestURI();
+        if (PUBLIC_PATHS.contains(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        String token = extractTokenFromCookieOrHeader(request);
 
-        String token = null;
-
-        // ✅ READ JWT FROM COOKIE
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("token".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (token != null) {
             try {
-                Claims claims = jwtService.parse(token);
+                String email = jwtService.extractEmail(token);
 
-                User user = userRepo.findById(claims.getSubject())
-                        .orElse(null);
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                if (user != null) {
-                    var authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_"+user.getRole().name())
-                    );
+                    if (jwtService.isTokenValid(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken auth =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
 
-
-                    // Option 2: without prefix (if you prefer)
-                    // var authorities = List.of(new SimpleGrantedAuthority(user.getRole().name()));
-
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    user,           // principal
-                                    null,           // credentials
-                                    authorities
-                            );
-
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
 
             } catch (Exception e) {
-                logger.warn("JWT invalid or expired: " + e.getMessage());
+                log.error("JWT authentication failed: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
             }
         }
 
         filterChain.doFilter(request, response);
     }
-//    private String getTokenFromCookie(HttpServletRequest request) {
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                if ("token".equals(cookie.getName())) {
-//                    return cookie.getValue();
-//                }
-//            }
-//        }
-//        return null;
-//    }
-}
 
+    // Extract token from cookie first, then Authorization header
+    private String extractTokenFromCookieOrHeader(HttpServletRequest request) {
+        // 1️⃣ Cookie
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("token".equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                    return cookie.getValue().trim();
+                }
+            }
+        }
+
+        // 2️⃣ Standard Authorization header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7).trim();
+        }
+
+        return null;
+    }
+}
