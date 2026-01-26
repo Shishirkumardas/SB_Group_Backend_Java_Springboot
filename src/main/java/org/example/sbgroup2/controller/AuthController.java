@@ -5,6 +5,7 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.LoginRequest;
+import org.example.sbgroup2.dto.ProfileResponse;
 import org.example.sbgroup2.dto.SignupRequest;
 import org.example.sbgroup2.enums.Role;
 import org.example.sbgroup2.models.CustomUserDetails;
@@ -131,6 +132,26 @@ public class AuthController {
         ));
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<?> profile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).build();
+        }
 
+        User user = userRepo
+                .findByEmail(authentication.getName())
+                .orElseThrow();
+
+        return ResponseEntity.ok(
+                new ProfileResponse(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole().name(),
+                        user.getPhoneNumber(),
+                        user.getAddress()
+                )
+        );
+    }
 
 }

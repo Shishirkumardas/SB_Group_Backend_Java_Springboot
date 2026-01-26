@@ -1,36 +1,19 @@
 package org.example.sbgroup2.services;
 
 import jakarta.transaction.Transactional;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.example.sbgroup2.ResourceNotFoundException;
-import org.example.sbgroup2.dto.CashbackDetailsDTO;
+
 import org.example.sbgroup2.dto.CustomerFormDTO;
 import org.example.sbgroup2.enums.OrderStatus;
 import org.example.sbgroup2.models.Area;
-import org.example.sbgroup2.models.CashbackPayment;
 import org.example.sbgroup2.models.MasterData;
-import org.example.sbgroup2.repositories.CashbackPaymentRepository;
 import org.example.sbgroup2.repositories.MasterDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.ParseException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+
 
 @Service
 public class MasterDataService {
@@ -38,9 +21,7 @@ public class MasterDataService {
     private MasterDataRepository masterDataRepository;
     @Autowired
     private AreaService areaService;
-    @Autowired
-    private CashbackService cashbackService;
-    private CashbackPaymentRepository cashbackPaymentRepository;
+
 
     public MasterData create(MasterData data) {
         if (data.getPurchaseAmount() != null && data.getPaidAmount() != null) {

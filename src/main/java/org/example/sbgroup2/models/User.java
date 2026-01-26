@@ -3,7 +3,7 @@ package org.example.sbgroup2.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.sbgroup2.enums.Role;
-import org.jspecify.annotations.Nullable;
+
 
 import java.util.UUID;
 
@@ -17,13 +17,17 @@ public class User {
     @Id
     private String id = UUID.randomUUID().toString();
 
+    private String name;
+
     @Column(unique = true, nullable = false)
     private String email;
+    private String phoneNumber;
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    private String address;
 // ADMIN or CUSTOMER
 //    private Role role;
 

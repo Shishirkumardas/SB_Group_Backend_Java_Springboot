@@ -56,7 +56,8 @@ public class SecurityConfig {
                 "http://localhost:3001",           // ← your current one
                 "http://192.168.68.107:3000",
                 "http://192.168.68.107:3001",
-                "http://172.16.0.2:3001"
+                "http://172.16.0.2:3001",
+                "https://unarticulate-unleached-tracey.ngrok-free.dev"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
@@ -89,7 +90,11 @@ public class SecurityConfig {
                                 "/api/auth/logout").permitAll()
 
                         // Protected but needs authentication
-                        .requestMatchers("/api/auth/me").authenticated()
+//                        .requestMatchers("/api/auth/me").authenticated()
+                                // Protected but needs authentication
+                                .requestMatchers("/api/auth/me").authenticated()
+                                .requestMatchers("/api/auth/profile").authenticated()
+
 //                        .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
 
 
@@ -107,6 +112,7 @@ public class SecurityConfig {
                                 "/api/accounts/**",
                                 "/api/calls/**",
                                 "/api/file-upload/**",
+//                                "/api/uploads/**",
                                 "/api/dashboard/**",
                                 "/api/dashboard/summary",
                                 "/api/areas/area-summary/daily"
@@ -115,6 +121,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**").permitAll()
                         .requestMatchers("/api/customer/payment-methods").permitAll()
                         .requestMatchers("/api/areas").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers("/api/cart/**").permitAll()
+                                .requestMatchers("/api/uploads/**").permitAll()
+                                .requestMatchers("/images/**").permitAll()
+                                .requestMatchers("/uploads/**").permitAll()
+                                .requestMatchers("/api/orders/**").permitAll()
+                                .requestMatchers("/api/admin/products").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/products/**").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/orders/**").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
+                                .requestMatchers("/uploads/products/**").permitAll()
+
+
 
                         // Everything else requires authentication
                         .anyRequest().authenticated()

@@ -2,16 +2,16 @@ package org.example.sbgroup2.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.*;
-import org.example.sbgroup2.models.Area;
+
 import org.example.sbgroup2.models.MasterData;
 import org.example.sbgroup2.repositories.MasterDataRepository;
 import org.example.sbgroup2.services.AreaService;
 import org.example.sbgroup2.services.CashbackService;
 import org.example.sbgroup2.services.MasterDataService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -63,19 +63,6 @@ public class MasterDataController {
     public MasterData updateMasterData(@PathVariable Long id, @RequestBody MasterData masterData) {
         return masterDataService.updateMasterData(id, masterData);
     }
-
-//    @PostMapping("/master-data/excel-csv")
-//    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
-//
-//        if (file.isEmpty()) {
-//            return ResponseEntity.badRequest().body("CSV file is empty");
-//        }
-//
-//        List<MasterData> rows = masterDataService.readExcel(file);
-//        masterDataService.importExcel(rows);
-//
-//        return ResponseEntity.ok("Master data uploaded successfully");
-//    }
 
 
     @PostMapping
