@@ -2,16 +2,13 @@ package org.example.sbgroup2.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.example.sbgroup2.dto.ProductCreateDTO;
 import org.example.sbgroup2.models.Product;
 import org.example.sbgroup2.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
@@ -32,7 +29,6 @@ public class ProductService {
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }
-
 
 
     // we'll create this next

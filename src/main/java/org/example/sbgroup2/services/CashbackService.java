@@ -12,9 +12,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +79,28 @@ public class CashbackService {
 //        );
 //    }
 
+    public List<CashbackDetailsDTO> getCashbacksByNextDueDate(LocalDate date) {
+
+        List<MasterData> allMasters = masterDataRepository.findAll();
+
+        List<CashbackDetailsDTO> result = new ArrayList<>();
+
+        for (MasterData master : allMasters) {
+            CashbackDetailsDTO dto = calculateCashback2(master);
+
+            if(dto.getUpcomingDueDates() != null && dto.getUpcomingDueDates().contains(date)) {
+                result.add(dto);
+            }
+            else if (dto.getNextDueDate() != null &&
+                    dto.getNextDueDate().equals(date)) {
+                result.add(dto);
+            }
+        }
+
+        return result;
+    }
+
+
     //For Excel Reading
     public CashbackDetailsDTO calculateCashback2(MasterData master) {
 
@@ -89,6 +113,8 @@ public class CashbackService {
         String name =master.getName();
         LocalDate purchaseDate = master.getDate();
         LocalDate today = LocalDate.now(); // 2026-01-10 in your case
+        String phoneNumber =Objects.toString("0"+master.getPhone(), "");
+        String paymentMethod = Objects.toString(master.getPaymentMethod(), "");
 
         // 1. Get ALL actual recorded payments
         List<CashbackPayment> payments = cashbackRepo.findByMasterDataId(master.getId());
@@ -129,6 +155,28 @@ public class CashbackService {
             // Next month after last payment
             nextDueDate = lastPaidDate.plusMonths(1);
         }
+
+        long totalExpectedMonths = totalPurchase
+                .divide(expectedMonthly, 0, RoundingMode.CEILING)
+                .longValue();
+
+// Generate all expected due dates
+        List<LocalDate> allDueDates = new ArrayList<>();
+        LocalDate currentDue = firstExpectedPayment;
+
+        for (long i = 0; i < totalExpectedMonths; i++) {
+            allDueDates.add(currentDue);
+            currentDue = currentDue.plusMonths(1);
+        }
+
+// Filter upcoming (future) dates only — from today onwards
+
+        List<LocalDate> upcoming = allDueDates.stream()
+                .filter(d -> !d.isBefore(today)) // d >= today
+                .sorted()                         // ensure chronological order
+                .toList();
+
+
         master.setNextDueDate(nextDueDate);
         masterDataRepository.save(master);
 
@@ -151,12 +199,17 @@ public class CashbackService {
                 name,
                 purchaseDate,
                 totalPurchase,
+
+                phoneNumber,
+                paymentMethod,
+
                 firstExpectedPayment,                    // startDate
                 firstExpectedPayment,                    // firstDueDate
                 firstExpectedPayment.plusMonths(10),     // estimated end date (10 months typical)
                 expectedMonthly,                         // monthly amount
                 missedAmount,                            // total missed
                 missedCount,                             // count of missed months
+                upcoming,
                 missedCount > 0 ? nextDueDate : null,    // overdue since
                 nextDueDate,                             // next due
                 remainingCashback,                       // remaining to pay
@@ -168,8 +221,8 @@ public class CashbackService {
 
     private CashbackDetailsDTO createEmptyDetails() {
         return new CashbackDetailsDTO(
-                "NOT_STARTED",null, BigDecimal.ZERO,null, null, null, BigDecimal.ZERO,
-                BigDecimal.ZERO, 0, null, null,
+                "NOT_STARTED",null, BigDecimal.ZERO,"NO Number","No method mentioned",null, null, null, BigDecimal.ZERO,
+                BigDecimal.ZERO, 0, new ArrayList<>(),null, null,
                 BigDecimal.ZERO, null, null, "NOT_STARTED"
         );
     }

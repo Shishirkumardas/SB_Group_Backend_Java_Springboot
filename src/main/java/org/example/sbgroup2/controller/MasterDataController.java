@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.*;
 
 import org.example.sbgroup2.models.MasterData;
+import org.example.sbgroup2.repositories.CashbackPaymentRepository;
 import org.example.sbgroup2.repositories.MasterDataRepository;
 import org.example.sbgroup2.services.AreaService;
 import org.example.sbgroup2.services.CashbackService;
@@ -26,6 +27,7 @@ public class MasterDataController {
     private final MasterDataService masterDataService;
     private final AreaService areaService;
     private final CashbackService  cashbackService;
+    private final CashbackPaymentRepository cashbackPaymentRepository;
 
     @GetMapping
     public List<MasterData> getAll() {
@@ -74,6 +76,12 @@ public class MasterDataController {
     public void delete(@PathVariable Long id) {
         masterDataService.delete(id);
     }
+    @DeleteMapping
+    public void deleteAll() {
+        cashbackPaymentRepository.deleteAll();
+        repo.deleteAll();
+    }
+
     @GetMapping("/consumers")
     public List<ConsumerView> consumers() {
         return repo.getConsumers();

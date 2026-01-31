@@ -1,15 +1,23 @@
 package org.example.sbgroup2.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.sbgroup2.dto.CashbackDetailsDTO;
 import org.example.sbgroup2.models.MasterData;
+import org.example.sbgroup2.services.CashbackService;
+import org.example.sbgroup2.services.FileExtractService;
 import org.example.sbgroup2.services.FileUploaderService;
 import org.example.sbgroup2.services.MasterDataService;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +28,8 @@ import java.util.Map;
 public class FileUploadController {
     private final FileUploaderService fileUploaderService;
     private final MasterDataService masterDataService;
+    private final FileExtractService fileExtractService;
+    private final CashbackService cashbackService;
 
     @PostMapping("/excel-csv")
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
@@ -33,6 +43,28 @@ public class FileUploadController {
 
         return ResponseEntity.ok("Master data uploaded successfully");
     }
+
+    @GetMapping("/excel/export")
+    public ResponseEntity<InputStreamResource> exportCashbackExcel(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate date) {
+
+        List<CashbackDetailsDTO> data =
+                cashbackService.getCashbacksByNextDueDate(date);
+
+        ByteArrayInputStream excel =
+                fileExtractService.generate(data);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition",
+                "attachment; filename=cashback_" + date + ".xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(excel));
+    }
+
 
 
     /**

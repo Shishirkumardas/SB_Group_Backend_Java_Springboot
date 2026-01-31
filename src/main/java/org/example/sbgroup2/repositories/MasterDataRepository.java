@@ -17,6 +17,8 @@ import java.util.List;
 public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
     MasterData findByName(String name);
 
+    List<MasterData> findByNextDueDate(LocalDate nextDueDate);
+
     @Query("""
         SELECT COALESCE(SUM(m.purchaseAmount), 0)
         FROM MasterData m
