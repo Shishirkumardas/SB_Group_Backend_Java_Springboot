@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class BkashTokenService {
     private String token;
     private LocalDateTime expiry;
 
+    // In BkashTokenService.java
     public String getToken() {
         if (token != null && expiry.isAfter(LocalDateTime.now())) {
             return token;
@@ -41,6 +43,7 @@ public class BkashTokenService {
     }
 
     private String generateToken() {
+
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -52,13 +55,18 @@ public class BkashTokenService {
         body.put("app_key", appKey);
         body.put("app_secret", appSecret);
 
+        System.out.println("Request Body: " + body);
+
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                baseUrl + "/tokenized/checkout/token/grant",
+                baseUrl + "/tokenized-checkout/auth/grant-token",
                 entity,
                 Map.class
         );
+
+        Map<String, Object> result = response.getBody();
+        System.out.println("Generate Token Success: " + result);
 
         token = (String) response.getBody().get("id_token");
         expiry = LocalDateTime.now().plusMinutes(55);

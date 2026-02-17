@@ -1,29 +1,19 @@
 package org.example.sbgroup2.controller;
 
-
 import io.micrometer.common.util.StringUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.example.sbgroup2.dto.LoginRequest;
 import org.example.sbgroup2.dto.ProfileResponse;
-import org.example.sbgroup2.dto.SignupRequest;
 import org.example.sbgroup2.enums.Role;
-import org.example.sbgroup2.models.CustomUserDetails;
 import org.example.sbgroup2.models.User;
 import org.example.sbgroup2.repositories.UserRepository;
 import org.example.sbgroup2.services.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
@@ -153,5 +143,4 @@ public class AuthController {
                 )
         );
     }
-
 }

@@ -1,11 +1,9 @@
 package org.example.sbgroup2.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.example.sbgroup2.enums.OrderStatus;
 import org.example.sbgroup2.enums.PaymentMethod;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

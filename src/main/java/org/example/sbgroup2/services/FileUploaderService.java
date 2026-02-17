@@ -136,6 +136,43 @@ public class FileUploaderService {
             if (cashbackColumns.isEmpty()) {
                 throw new IllegalStateException("No cashback month columns detected");
             }
+//            int lastCol = header.getLastCellNum();
+//
+//            for (int col = 0; col < lastCol; col++) {
+//                Cell cell = header.getCell(col);
+//                if (cell == null) continue;
+//
+//                try {
+//                    // CASE 1: Excel date header
+//                    if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+//                        LocalDate date = cell.getLocalDateTimeCellValue().toLocalDate();
+//                        cashbackColumns.put(col, YearMonth.from(date));
+//                        continue;
+//                    }
+//
+//                    // CASE 2: Text header
+//                    String raw = cell.toString().trim();
+//                    if (raw.isEmpty()) continue;
+//
+//                    raw = raw.replace("/", "-").replaceAll("\\s+", " ");
+//
+//                    for (DateTimeFormatter formatter : formatters) {
+//                        try {
+//                            TemporalAccessor parsed = formatter.parse(raw);
+//
+//                            if (parsed.isSupported(ChronoField.MONTH_OF_YEAR)) {
+//                                int year = parsed.isSupported(ChronoField.YEAR)
+//                                        ? parsed.get(ChronoField.YEAR)
+//                                        : Year.now().getValue();
+//
+//                                int month = parsed.get(ChronoField.MONTH_OF_YEAR);
+//                                cashbackColumns.put(col, YearMonth.of(year, month));
+//                                break;
+//                            }
+//                        } catch (Exception ignored) {}
+//                    }
+//                } catch (Exception ignored) {}
+//            }
 
 
 

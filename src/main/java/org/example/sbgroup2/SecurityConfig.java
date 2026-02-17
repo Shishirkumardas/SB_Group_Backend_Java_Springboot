@@ -120,6 +120,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/areas/area").permitAll()
                         .requestMatchers("/api/payments/**").permitAll()
                         .requestMatchers("/api/customer/payment-methods").permitAll()
+                                .requestMatchers("/api/customer/**").permitAll()
                         .requestMatchers("/api/areas").permitAll()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/users/**").permitAll()
@@ -133,6 +134,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/orders/**").hasRole("ADMIN")
                                 .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
                                 .requestMatchers("/uploads/products/**").permitAll()
+                                .requestMatchers("/api/bkash/**").permitAll()
 
 
 

@@ -20,6 +20,7 @@ public class CustomerFormDTO {
     private LocalDate paymentDate;
     private BigDecimal amount;
     private PaymentMethod paymentMethod;
+    private BigDecimal quantity;
 
 }
 

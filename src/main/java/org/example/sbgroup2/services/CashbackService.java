@@ -113,7 +113,10 @@ public class CashbackService {
         String name =master.getName();
         LocalDate purchaseDate = master.getDate();
         LocalDate today = LocalDate.now(); // 2026-01-10 in your case
-        String phoneNumber =Objects.toString("0"+master.getPhone(), "");
+//        String phoneNumber =Objects.toString("0"+master.getPhone(), "");
+        String phoneNumber = "0" + Objects.toString(master.getPhone() != null
+                ? master.getPhone().longValue()
+                : "", "");
         String paymentMethod = Objects.toString(master.getPaymentMethod(), "");
 
         // 1. Get ALL actual recorded payments
@@ -199,10 +202,8 @@ public class CashbackService {
                 name,
                 purchaseDate,
                 totalPurchase,
-
                 phoneNumber,
                 paymentMethod,
-
                 firstExpectedPayment,                    // startDate
                 firstExpectedPayment,                    // firstDueDate
                 firstExpectedPayment.plusMonths(10),     // estimated end date (10 months typical)

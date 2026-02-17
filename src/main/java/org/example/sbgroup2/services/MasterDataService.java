@@ -6,6 +6,7 @@ import org.example.sbgroup2.ResourceNotFoundException;
 
 import org.example.sbgroup2.dto.CustomerFormDTO;
 import org.example.sbgroup2.enums.OrderStatus;
+import org.example.sbgroup2.enums.PaymentMethod;
 import org.example.sbgroup2.models.Area;
 import org.example.sbgroup2.models.MasterData;
 import org.example.sbgroup2.repositories.MasterDataRepository;
@@ -132,11 +133,21 @@ public class MasterDataService {
         md.setArea(area);
         md.setPhone(dto.getPhoneNumber());
         md.setNid(dto.getNid());
-
+        md.setQuantity(dto.getQuantity());
         md.setDate(dto.getPaymentDate());
         md.setPaymentMethod(dto.getPaymentMethod());
         md.setPurchaseAmount(dto.getAmount());
         md.setPaidAmount(dto.getAmount());
+        md.setAmountBackFromPurchase(dto.getAmount());
+
+
+        if (dto.getPhoneNumber() != null && dto.getPaymentMethod()==PaymentMethod.BKASH) {
+            md.setBkashNumber(dto.getPhoneNumber());
+        } else if (dto.getPhoneNumber() != null && dto.getPaymentMethod()==PaymentMethod.ROCKET) {
+            md.setRocketNumber(dto.getPhoneNumber());
+        } else if (dto.getPhoneNumber() != null && dto.getPaymentMethod()==PaymentMethod.NAGAD) {
+            md.setNogodNumber(dto.getPhoneNumber());
+        }
 
         MasterData saved = masterDataRepository.save(md);
         areaService.recalculateArea(area.getId());
