@@ -27,6 +27,14 @@ public class MasterData {
             orphanRemoval = true
     )
     private List<Payment> payments;
+
+//    @OneToMany(
+//            mappedBy = "masterData",
+//            cascade = CascadeType.ALL,
+//            orphanRemoval = true
+//    )
+//    private CashbackPayment cashbackPayments;
+
     private BigDecimal quantity;
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

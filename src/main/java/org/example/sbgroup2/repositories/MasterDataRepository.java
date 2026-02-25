@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
     MasterData findByName(String name);
@@ -159,6 +160,8 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
     FROM MasterData m
 """)
     OverallSummary getSummary();
+
+    List<MasterData> findByPhone(BigDecimal normalizedPhone);
 
 //    @Query("""
 //SELECT new org.example.sbgroup2.dto.OverallSummary(

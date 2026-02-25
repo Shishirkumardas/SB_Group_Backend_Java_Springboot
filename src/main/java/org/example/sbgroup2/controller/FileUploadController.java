@@ -1,12 +1,10 @@
 package org.example.sbgroup2.controller;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.sbgroup2.dto.CashbackDetailsDTO;
 import org.example.sbgroup2.models.MasterData;
-import org.example.sbgroup2.services.CashbackService;
-import org.example.sbgroup2.services.FileExtractService;
-import org.example.sbgroup2.services.FileUploaderService;
-import org.example.sbgroup2.services.MasterDataService;
+import org.example.sbgroup2.services.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +29,7 @@ public class FileUploadController {
     private final MasterDataService masterDataService;
     private final FileExtractService fileExtractService;
     private final CashbackService cashbackService;
+    private final CashbackPayoutUpdateService cashbackPayoutUpdateService;
 
     @PostMapping("/excel-csv")
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
@@ -97,6 +97,20 @@ public class FileUploadController {
                             "status", "error",
                             "message", e.getMessage()
                     ));
+        }
+    }
+
+
+    @PostMapping("/upload-payout-excel")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> uploadPayout(@RequestParam("file") MultipartFile file) {
+        try {
+            Map<String, Object> result = cashbackPayoutUpdateService.processPayoutExcel(file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 
