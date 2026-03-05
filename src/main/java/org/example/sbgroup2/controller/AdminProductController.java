@@ -3,6 +3,7 @@ package org.example.sbgroup2.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.example.sbgroup2.dto.ProductCreateDTO;
+import org.example.sbgroup2.dto.ProductDTO;
 import org.example.sbgroup2.models.Product;
 import org.example.sbgroup2.repositories.ProductRepository;
 import org.example.sbgroup2.services.ProductService;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")  // protect with role
+//@PreAuthorize("hasRole('ADMIN')")  // protect with role
 public class AdminProductController {
 
     private final ProductService productService;
@@ -27,6 +28,26 @@ public class AdminProductController {
         Product saved = productService.createProduct(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
+    @PostMapping("/{id}")
+    @PatchMapping("/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @ModelAttribute ProductDTO dto) {   // @ModelAttribute for multipart
+
+        Product saved = productService.updateProduct(id,dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Product> updateProduct2(
+//            @PathVariable Long id,
+//            @ModelAttribute ProductDTO dto) {   // @ModelAttribute for multipart
+//
+//        Product saved = productService.updateProduct(id,dto);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+//    }
 
     // 🔥 DELETE PRODUCT
     @DeleteMapping("/{id}")
