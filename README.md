@@ -43,15 +43,14 @@ Built with modern **Java**, **Spring Boot**, and best practices for scalability,
 
 ## 📸 Screenshots / Demo
 ![Master Data](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/master-data.jpg)
-<image-card alt="Master Data" src="screenshots/master-data.jpg" ></image-card>
-<image-card alt="Auto Generated Cashback Details" src="screenshots/cashback-details.jpeg" ></image-card>
-<image-card alt="Daily Cashback sheet Extraction" src="screenshots/cashback-excel-extract.jpg.jpeg" ></image-card>
-<image-card alt="Daily Cashback sheet" src="screenshots/cashback-excel-file-exp.jpg" ></image-card>
-<image-card alt="Bkash Disbursement Sheet Upload" src="screenshots/cashback-payout-update.jpg" ></image-card>
-<image-card alt="Dashboard" src="screenshots/dashboard.jpg" ></image-card>
-<image-card alt="Area Summary" src="screenshots/area-summary.jpg" ></image-card>
-<image-card alt="Product Manage" src="screenshots/manage-products.jpg" ></image-card>
-<image-card alt="Daily Summary" src="screenshots/daily-summary.jpg" ></image-card>
+![Auto Generated Cashback Details](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/cashback-details.jpeg)
+![Daily Cashback sheet Extraction](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/cashback-excel-extract.jpg.jpeg)
+![Daily Cashback sheet](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/cashback-excel-file-exp.jpg)
+![Bkash Disbursement Sheet Upload](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/cashback-payout-update.jpg)
+![Dashboard](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshotsdashboard.jpg)
+![Area Summary](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/area-summary.jpg)
+![Product Manage](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/manage-products.jpg)
+![Daily Summary](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/daily-summary.jpg)
 
 
 ## 🚀 Quick Start (Local Development)
