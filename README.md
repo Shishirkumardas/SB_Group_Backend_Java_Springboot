@@ -43,15 +43,15 @@ Built with modern **Java**, **Spring Boot**, and best practices for scalability,
 
 ## 📸 Screenshots / Demo
 
-<!-- ![Master Data](screenshots/master-data.jpg) -->
-<!-- ![Auto Generated Cashback Details](screenshots/cashback-details.jpeg) -->
-<!-- ![Daily Cashback sheet Extraction](screenshots/cashback-excel-extract.jpg.jpeg) -->
-<!-- ![Daily Cashback sheet](screenshots/cashback-excel-file-exp.jpg) -->
-<!-- ![Bkash Disbursement Sheet Upload](screenshots/cashback-payout-update.jpg) -->
-<!-- ![Dashboard](screenshots/dashboard.jpg) -->
-<!-- ![Area Summary](screenshots/area-summary.jpg) -->
-<!-- ![Product Manage](screenshots/manage-products.jpg) -->
-<!-- ![Daily Summary](screenshots/daily-summary.jpg) -->
+<image-card alt="Master Data" src="screenshots/master-data.jpg" ></image-card>
+<image-card alt="Auto Generated Cashback Details" src="screenshots/cashback-details.jpeg" ></image-card>
+<image-card alt="Daily Cashback sheet Extraction" src="screenshots/cashback-excel-extract.jpg.jpeg" ></image-card>
+<image-card alt="Daily Cashback sheet" src="screenshots/cashback-excel-file-exp.jpg" ></image-card>
+<image-card alt="Bkash Disbursement Sheet Upload" src="screenshots/cashback-payout-update.jpg" ></image-card>
+<image-card alt="Dashboard" src="screenshots/dashboard.jpg" ></image-card>
+<image-card alt="Area Summary" src="screenshots/area-summary.jpg" ></image-card>
+<image-card alt="Product Manage" src="screenshots/manage-products.jpg" ></image-card>
+<image-card alt="Daily Summary" src="screenshots/daily-summary.jpg" ></image-card>
 
 
 ## 🚀 Quick Start (Local Development)
