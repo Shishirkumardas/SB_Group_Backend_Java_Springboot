@@ -1,0 +1,24 @@
+package org.sb_ibms.models;
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Entity
+@Data
+@Table(name = "cashback")
+public class CashbackPayment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    private MasterData masterData;
+
+    private LocalDate paymentDate;
+
+    private BigDecimal amount;
+
+
+}
