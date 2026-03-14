@@ -42,7 +42,7 @@ Built with modern **Java**, **Spring Boot**, and best practices for scalability,
 | Other             | Lombok, MapStruct (if used), Git    | Productivity & code quality          |
 
 ## 📸 Screenshots / Demo
-
+![Master Data](https://raw.githubusercontent.com/Shishirkumardas/SB_Group_Backend_Java_Springboot/master/screenshots/master-data.jpg)
 <image-card alt="Master Data" src="screenshots/master-data.jpg" ></image-card>
 <image-card alt="Auto Generated Cashback Details" src="screenshots/cashback-details.jpeg" ></image-card>
 <image-card alt="Daily Cashback sheet Extraction" src="screenshots/cashback-excel-extract.jpg.jpeg" ></image-card>
