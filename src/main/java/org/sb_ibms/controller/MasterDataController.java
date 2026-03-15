@@ -1,15 +1,12 @@
 package org.sb_ibms.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.sb_ibms.dto.ConsumerView;
 import org.sb_ibms.dto.OverallSummary;
 import org.sb_ibms.dto.PaymentView;
 import org.sb_ibms.dto.PurchaseView;
 import org.sb_ibms.models.MasterData;
 import org.sb_ibms.repositories.CashbackPaymentRepository;
 import org.sb_ibms.repositories.MasterDataRepository;
-import org.sb_ibms.services.AreaService;
-import org.sb_ibms.services.CashbackService;
 import org.sb_ibms.services.MasterDataService;
 import org.springframework.http.HttpStatus;
 
@@ -26,8 +23,6 @@ public class MasterDataController {
 
     private final MasterDataRepository repo;
     private final MasterDataService masterDataService;
-    private final AreaService areaService;
-    private final CashbackService  cashbackService;
     private final CashbackPaymentRepository cashbackPaymentRepository;
 
     @GetMapping

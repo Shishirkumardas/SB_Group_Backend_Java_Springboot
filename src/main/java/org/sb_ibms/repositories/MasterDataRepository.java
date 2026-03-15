@@ -37,10 +37,7 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
 
 
     @Query("""
-    SELECT COALESCE(SUM(m.purchaseAmount), 0) 
-    FROM MasterData m 
-    WHERE m.area.id = :areaId 
-    AND m.date = :date
+    SELECT COALESCE(SUM(m.purchaseAmount), 0) FROM MasterData m WHERE m.area.id = :areaId AND m.date = :date
 """)
     BigDecimal sumPurchaseByAreaAndDate(
             @Param("areaId") Long areaId,
@@ -48,10 +45,7 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
     );
 
     @Query("""
-    SELECT COALESCE(SUM(m.quantity), 0) 
-    FROM MasterData m 
-    WHERE m.area.id = :areaId 
-    AND m.date = :date
+    SELECT COALESCE(SUM(m.quantity), 0) FROM MasterData m WHERE m.area.id = :areaId AND m.date = :date
 """)
     BigDecimal sumQuantityByAreaAndDate(
             @Param("areaId") Long areaId,

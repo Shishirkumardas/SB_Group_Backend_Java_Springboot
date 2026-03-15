@@ -1,9 +1,9 @@
 package org.sb_ibms.controller;
 
+import lombok.AllArgsConstructor;
 import org.sb_ibms.models.MasterData;
 import org.sb_ibms.repositories.MasterDataRepository;
 import org.sb_ibms.services.BkashPaymentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
@@ -11,13 +11,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bkash")
+@AllArgsConstructor
 public class BkashController {
 
-    @Autowired
-    private BkashPaymentService paymentService;
 
-    @Autowired
+    private BkashPaymentService paymentService;
     private MasterDataRepository masterDataRepository;
+    private BkashPaymentService bkashPaymentService;
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestParam BigDecimal amount) {
@@ -27,8 +27,7 @@ public class BkashController {
 
         return ResponseEntity.ok(response);
     }
-    @Autowired
-    private BkashPaymentService bkashPaymentService;
+
 
 
     @PostMapping("/pay")

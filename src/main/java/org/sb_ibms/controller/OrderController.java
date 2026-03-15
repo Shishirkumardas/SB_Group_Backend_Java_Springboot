@@ -2,6 +2,7 @@ package org.sb_ibms.controller;
 
 
 
+import lombok.AllArgsConstructor;
 import org.sb_ibms.dto.OrderResponseDTO;
 import org.sb_ibms.enums.OrderStatus;
 import org.sb_ibms.models.CartItem;
@@ -9,10 +10,8 @@ import org.sb_ibms.models.Order;
 import org.sb_ibms.models.OrderItem;
 import org.sb_ibms.models.User;
 import org.sb_ibms.repositories.CartItemRepository;
-import org.sb_ibms.repositories.OrderItemRepository;
 import org.sb_ibms.repositories.OrderRepository;
 import org.sb_ibms.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,14 +19,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
+@AllArgsConstructor
 public class OrderController {
-    @Autowired
+
     private OrderRepository orderRepository;
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-    @Autowired
     private CartItemRepository cartItemRepository;
-    @Autowired
     private UserRepository userRepository;
 
     @PostMapping("/create")

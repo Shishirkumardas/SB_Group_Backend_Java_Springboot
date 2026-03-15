@@ -1,11 +1,10 @@
 package org.sb_ibms.controller;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.sb_ibms.dto.CustomerFormDTO;
 import org.sb_ibms.enums.PaymentMethod;
 import org.sb_ibms.services.BkashPaymentService;
 import org.sb_ibms.services.MasterDataService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,12 +12,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customer")
 @CrossOrigin(origins = "http://localhost:3001")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CustomerController {
 
     private final MasterDataService masterDataService;
-
-    @Autowired
     private BkashPaymentService bkashPaymentService;
 
     @PostMapping("/submit")

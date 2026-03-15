@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/file-upload")
@@ -93,7 +94,7 @@ public class FileUploadController {
                     .body(Map.of("error", "No file uploaded"));
         }
 
-        if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
+        if (!Objects.requireNonNull(file.getOriginalFilename()).toLowerCase().endsWith(".xlsx")) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Only .xlsx files are supported"));
         }

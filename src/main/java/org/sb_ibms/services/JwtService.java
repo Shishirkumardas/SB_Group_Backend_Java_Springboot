@@ -44,11 +44,6 @@ public class JwtService {
         return extractAllClaims(token).getSubject();
     }
 
-    // Extract role from JWT
-    public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
-    }
-
     // Validate JWT with UserDetails
     public boolean isTokenValid(String token, UserDetails userDetails) {
         return userDetails.getUsername().equals(extractEmail(token))
