@@ -2,7 +2,6 @@ package org.sb_ibms.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.sb_ibms.models.Area;
-import org.sb_ibms.repositories.AreaRepository;
 import org.sb_ibms.services.AreaService;
 import org.sb_ibms.services.AreaSummaryDTO;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3001")
 public class AreaController {
-    private final AreaRepository repo;
     private final AreaService areaService;
 
     @GetMapping

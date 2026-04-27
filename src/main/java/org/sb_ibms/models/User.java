@@ -5,6 +5,8 @@ import lombok.Data;
 import org.sb_ibms.enums.Role;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -26,6 +28,19 @@ public class User {
     @Column(nullable = false)
     private Role role;
     private String address;
+
+    // Hierarchy (only for internal roles like GM, AGM, ME, etc.)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private User manager;                    // GM has null, AGM points to GM, ME to AGM, etc.
+
+    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<User> subordinates = new ArrayList<>();
+
+
+    private Long shoppingMallId;             // nullable – only for mall roles
+    private String employeeCode;
+
     public User() {}
 
     public User(String email, String password, Role role) {

@@ -13,5 +13,4 @@ public class Sb_ibmsApplication {
     public static void main(String[] args) {
         SpringApplication.run(Sb_ibmsApplication.class, args);
     }
-
 }

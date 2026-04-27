@@ -1,5 +1,4 @@
 package org.sb_ibms.controller;
-
 import lombok.RequiredArgsConstructor;
 import org.sb_ibms.models.User;
 import org.sb_ibms.repositories.UserRepository;

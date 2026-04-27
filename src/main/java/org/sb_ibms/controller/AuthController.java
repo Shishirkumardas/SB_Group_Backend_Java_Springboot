@@ -77,7 +77,7 @@ public class AuthController {
 
         Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // ⚠ false for localhost
+        cookie.setSecure(false);
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
         cookie.setAttribute("SameSite", "Lax");

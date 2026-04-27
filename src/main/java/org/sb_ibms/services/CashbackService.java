@@ -2,6 +2,7 @@ package org.sb_ibms.services;
 
 import lombok.RequiredArgsConstructor;
 import org.sb_ibms.dto.CashbackDetailsDTO;
+import org.sb_ibms.models.Area;
 import org.sb_ibms.models.CashbackPayment;
 import org.sb_ibms.models.MasterData;
 import org.sb_ibms.repositories.CashbackPaymentRepository;
@@ -25,47 +26,92 @@ public class CashbackService {
     private final CashbackPaymentRepository cashbackRepo;
     private final MasterDataRepository masterDataRepository;
 
-    public List<CashbackDetailsDTO> getCashbacksByNextDueDate(LocalDate date) {
+//    public List<CashbackDetailsDTO> getCashbacksByNextDueDate(LocalDate date) {
+//
+//        List<MasterData> allMasters = masterDataRepository.findAll();
+//
+//        List<CashbackDetailsDTO> result = new ArrayList<>();
+//
+//        for (MasterData master : allMasters) {
+//            CashbackDetailsDTO dto = calculateCashback2(master);
+//
+//            if(dto.getUpcomingDueDates() != null && dto.getUpcomingDueDates().contains(date)) {
+//                result.add(dto);
+//            }
+//            else if (dto.getNextDueDate() != null &&
+//                    dto.getNextDueDate().equals(date)) {
+//                result.add(dto);
+//            }
+//        }
+//
+//        return result;
+//    }
 
-        List<MasterData> allMasters = masterDataRepository.findAll();
-
-        List<CashbackDetailsDTO> result = new ArrayList<>();
-
-        for (MasterData master : allMasters) {
-            CashbackDetailsDTO dto = calculateCashback2(master);
-
-            if(dto.getUpcomingDueDates() != null && dto.getUpcomingDueDates().contains(date)) {
-                result.add(dto);
-            }
-            else if (dto.getNextDueDate() != null &&
-                    dto.getNextDueDate().equals(date)) {
-                result.add(dto);
-            }
-        }
-
-        return result;
-    }
-    //Cashback List according
-    public List<CashbackDetailsDTO> getCashbackByPurchaseDate(LocalDate inputDate) {
-        int targetDay = inputDate.getDayOfMonth();
+    public List<CashbackDetailsDTO> getCashbacksByNextDueDate(LocalDate inputDate) {
+        LocalDate today = (inputDate != null) ? inputDate : LocalDate.now();
 
         return masterDataRepository.findAll().stream()
                 .map(this::calculateCashback2)
+                .filter(dto -> hasDueDateOnOrBefore(dto, today))
+                .collect(Collectors.toList());
+    }
+
+    private boolean hasDueDateOnOrBefore(CashbackDetailsDTO dto, LocalDate today) {
+        // Primary check: Next Due Date
+        if (dto.getNextDueDate() != null) {
+            return dto.getNextDueDate().isBefore(today) || dto.getNextDueDate().isEqual(today);
+        }
+
+        // Fallback: Check any upcoming due date
+        if (dto.getUpcomingDueDates() != null) {
+            return dto.getUpcomingDueDates().stream()
+                    .anyMatch(due -> due != null &&
+                            (due.isBefore(today) || due.isEqual(today)));
+        }
+
+        return false;
+    }
+    //Cashback List according
+//    public List<CashbackDetailsDTO> getCashbackByPurchaseDate(LocalDate inputDate) {
+//        int targetDay = inputDate.getDayOfMonth();
+//
+//        return masterDataRepository.findAll().stream()
+//                .map(this::calculateCashback2)
+//                .filter(dto -> {
+//                    // Check next due date
+//                    if (dto.getNextDueDate() != null &&
+//                            dto.getNextDueDate().getDayOfMonth() == targetDay && dto.getPurchaseDate().getDayOfMonth()==targetDay
+//                            && dto.getPurchaseDate()!=inputDate) {
+//                        return true;
+//                    }
+//
+//                    // Check any of the upcoming due dates
+//                    if (dto.getUpcomingDueDates() != null) {
+//                        return dto.getUpcomingDueDates().stream()
+//                                .anyMatch(due -> due != null && due.getDayOfMonth() == targetDay);
+//                    }
+//
+//                    return false;
+//                })
+//                .collect(Collectors.toList());
+//    }
+
+    public List<CashbackDetailsDTO> getCashbackByPurchaseDate(LocalDate inputDate) {
+        if (inputDate == null) {
+            return List.of();
+        }
+
+        int targetDay = inputDate.getDayOfMonth();
+
+        return masterDataRepository.findAll().stream()
+                .map(this::calculateCashback2)           // Keep your calculation
                 .filter(dto -> {
-                    // Check next due date
-                    if (dto.getNextDueDate() != null &&
-                            dto.getNextDueDate().getDayOfMonth() == targetDay && dto.getPurchaseDate().getDayOfMonth()==targetDay
-                            && dto.getPurchaseDate()!=inputDate) {
-                        return true;
+                    if (dto.getPurchaseDate() == null) {
+                        return false;
                     }
 
-                    // Check any of the upcoming due dates
-                    if (dto.getUpcomingDueDates() != null) {
-                        return dto.getUpcomingDueDates().stream()
-                                .anyMatch(due -> due != null && due.getDayOfMonth() == targetDay);
-                    }
-
-                    return false;
+                    // Main condition: Purchase was made on the same day of any month
+                    return dto.getPurchaseDate().getDayOfMonth() == targetDay;
                 })
                 .collect(Collectors.toList());
     }
@@ -84,7 +130,8 @@ public class CashbackService {
         }
 
         BigDecimal quantity = master.getQuantity();
-
+        Area area = master.getArea();
+        String areaName = area != null ? area.getName() : "Unknown Area";
         BigDecimal totalPurchase = master.getPurchaseAmount();
         String name =master.getName();
         LocalDate purchaseDate = master.getDate();
@@ -177,7 +224,9 @@ public class CashbackService {
                 remainingCashback,
                 nextDueDate,
                 firstExpectedPayment,
-                status
+                status,
+                areaName
+
         );
     }
 
@@ -185,7 +234,7 @@ public class CashbackService {
         return new CashbackDetailsDTO(
                 "NOT_STARTED",null,null, BigDecimal.ZERO,"NO Number","No method mentioned",null, null, null, BigDecimal.ZERO,
                 BigDecimal.ZERO, 0, new ArrayList<>(),null, null,
-                BigDecimal.ZERO, null, null, "NOT_STARTED"
+                BigDecimal.ZERO, null, null, "NOT_STARTED",""
         );
     }
 }

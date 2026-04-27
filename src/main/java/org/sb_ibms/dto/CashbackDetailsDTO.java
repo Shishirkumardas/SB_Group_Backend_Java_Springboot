@@ -37,4 +37,5 @@ public class CashbackDetailsDTO {
     private LocalDate earliestDueMonth;
 
     private String cashbackStatus;
+    private String areaName;
 }

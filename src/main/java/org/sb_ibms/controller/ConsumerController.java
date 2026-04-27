@@ -44,7 +44,7 @@ public class ConsumerController {
     @GetMapping("/summary/area")
     public ResponseEntity<Area> getAreaSummary(long id) {
         Area summary = areaService.getAreaSummary(id);
-        return ResponseEntity.ok((Area) summary);
+        return ResponseEntity.ok(summary);
     }
 
 }

@@ -20,5 +20,4 @@ public class ConsumerService {
         consumer.setDueAmount(consumerDetails.getDueAmount());
         return consumerRepository.save(consumer);
     }
-
 }
