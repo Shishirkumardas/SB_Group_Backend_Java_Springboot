@@ -1,17 +1,19 @@
 package org.sb_ibms.services;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.sb_ibms.dto.CashbackDetailsDTO;
-import org.sb_ibms.models.Area;
-import org.sb_ibms.models.CashbackPayment;
-import org.sb_ibms.models.MasterData;
+import org.sb_ibms.models.*;
 import org.sb_ibms.repositories.CashbackPaymentRepository;
 import org.sb_ibms.repositories.MasterDataRepository;
+import org.sb_ibms.repositories.ShoppingMallCashbackRepo;
+import org.sb_ibms.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,6 +27,9 @@ public class CashbackService {
 
     private final CashbackPaymentRepository cashbackRepo;
     private final MasterDataRepository masterDataRepository;
+    private final UserRepository userRepo;
+    private final ShoppingMallCashbackRepo shoppingMallCashbackRepo;
+    private final BkashPaymentService bkashService;
 
 //    public List<CashbackDetailsDTO> getCashbacksByNextDueDate(LocalDate date) {
 //
@@ -228,6 +233,31 @@ public class CashbackService {
                 areaName
 
         );
+    }
+
+    @Transactional
+    public String createAndInitiateShoppingMallCashback(String userId,
+                                            double amount,
+                                            String description,
+                                            String remarks) {
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        ShoppingMallCashback cashback = new ShoppingMallCashback();
+        cashback.setUser(user);
+        cashback.setAmount(amount);
+        cashback.setDescription(description);
+        cashback.setRemarks(remarks);
+        cashback.setStatus("PENDING");
+        cashback.setCreatedAt(LocalDateTime.now());
+
+        ShoppingMallCashback saved = shoppingMallCashbackRepo.save(cashback);
+
+        // Initiate bKash payment
+        bkashService.makePayment(Long.valueOf(saved.getId()));
+
+        return saved.getId();   // Return cashback ID for reference
     }
 
     private CashbackDetailsDTO createEmptyDetails() {

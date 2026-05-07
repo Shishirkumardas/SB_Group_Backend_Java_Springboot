@@ -1,9 +1,13 @@
 package org.sb_ibms.controller;
 import lombok.RequiredArgsConstructor;
+import org.sb_ibms.dto.userDTO;
 import org.sb_ibms.models.User;
-import org.sb_ibms.repositories.UserRepository;
+import org.sb_ibms.services.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -15,37 +19,40 @@ import org.springframework.web.bind.annotation.*;
         exposedHeaders = "Set-Cookie"
 )
 public class UserController {
-    private final UserRepository userRepo;
 
+    private final UserService userService;
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'DMD', 'PD', 'GM')")
+    public ResponseEntity<User> createUser(@RequestBody userDTO dto) {
+        User savedUser = userService.createUser(dto);
+        return ResponseEntity.ok(savedUser);
+    }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable String id) {
-        return userRepo.findById(id).orElseThrow();
+    public ResponseEntity<User> getUser(@PathVariable String id) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(user);
+    }
+
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'DMD', 'PD', 'GM')")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/{managerId}/subordinates")
+    public ResponseEntity<List<User>> getSubordinates(@PathVariable String managerId) {
+        return ResponseEntity.ok(userService.getSubordinates(managerId));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateUser(@RequestBody User updatedUser) {
+    public ResponseEntity<User> updateUser(@RequestBody User updatedUser) {
         if (updatedUser.getId() == null) {
-            return ResponseEntity.badRequest().body("User ID is required");
+            return ResponseEntity.badRequest().build();
         }
-
-        return userRepo.findById(updatedUser.getId())
-                .map(existingUser -> {
-
-                    if (updatedUser.getName() != null) {
-                        existingUser.setName(updatedUser.getName());
-                    }
-                    if (updatedUser.getPhoneNumber() != null) {
-                        existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
-                    }
-                    if (updatedUser.getAddress() != null) {
-                        existingUser.setAddress(updatedUser.getAddress());
-                    }
-
-
-                    User saved = userRepo.save(existingUser);
-                    return ResponseEntity.ok(saved);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(userService.updateUser(updatedUser));
     }
 }

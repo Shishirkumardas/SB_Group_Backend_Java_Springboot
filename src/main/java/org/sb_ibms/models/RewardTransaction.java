@@ -1,14 +1,13 @@
 package org.sb_ibms.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Entity
-public class RewardTransaction {              // audit trail like your CashbackDetails
+@Data
+public class RewardTransaction {              // audit trail like CashbackDetails
     @Id
     @GeneratedValue
     private Long id;
@@ -17,5 +16,17 @@ public class RewardTransaction {              // audit trail like your CashbackD
     private int pointsEarned;                 // or negative for redemption
     private String description;               // "Purchase at mall" or "Redeemed for cashback"
     private LocalDateTime timestamp;
-    private Long cashbackId;                  // link to your existing CashbackDetails if redeemed
+
+    private LocalDateTime expiresAt;
+
+
+    private Long cashbackId;
+    @Column(nullable = false)
+    private LocalDateTime transactionDate;// link to existing CashbackDetails if redeemed
+
+    // Helper method
+    public boolean isExpired() {
+        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
+    }
+
 }

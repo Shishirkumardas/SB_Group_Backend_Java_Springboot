@@ -113,6 +113,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
                         .requestMatchers("/uploads/products/**").authenticated()
                         .requestMatchers("/api/bkash/**").permitAll()
+                        .requestMatchers("/api/rewards/").authenticated()
 
 
 

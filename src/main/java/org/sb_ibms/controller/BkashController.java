@@ -39,6 +39,15 @@ public class BkashController {
         );
     }
 
+    @PostMapping("/shoppingMall-cashback-pay")
+    public ResponseEntity<?> ShoppingMallCashbackPay(
+            @RequestParam Long userId) {
+
+        return ResponseEntity.ok(
+                bkashPaymentService.makePayment(userId)
+        );
+    }
+
     @GetMapping("/search")
 
     public ResponseEntity<?> searchTransaction(
