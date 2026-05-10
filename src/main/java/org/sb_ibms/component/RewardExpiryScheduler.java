@@ -5,7 +5,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-// src/main/java/org/sb_ibms/scheduler/RewardExpiryScheduler.java
+
 @Component
 @EnableScheduling
 public class RewardExpiryScheduler {

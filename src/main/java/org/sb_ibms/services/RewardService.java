@@ -143,11 +143,27 @@ public class RewardService {
         return rewardCardRepo.findByCustomerId(Long.valueOf(customerId))
                 .orElseThrow(() -> new IllegalArgumentException("No reward card found for customer"));
     }
+    public RewardCard getRewardCardByNumber(
+            String cardNumber
+    ) {
+
+        return rewardCardRepo
+                .findByCardNumber(cardNumber)
+                .orElseThrow(() ->
+                        new RuntimeException("Card not found"));
+    }
 
     public RewardCard getRewardCardById(String cardId) {
         long id=Long.parseLong(cardId);
         return rewardCardRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reward card not found"));
+    }
+    public RewardCardDTO getRewardCardByIdDTO(String cardId) {
+        long id = Long.parseLong(cardId);
+        RewardCard card = rewardCardRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Reward card not found"));
+
+        return convertToDTO(card);
     }
 
 //    public List<RewardCard> getAllRewardCards() {
@@ -155,14 +171,37 @@ public class RewardService {
 //    }
 
     // Add this method
-    public List<RewardCard> getAllRewardCards() {
-        return rewardCardRepo.findAll();   // Now it will eagerly load customer thanks to @EntityGraph
+    public List<RewardCardDTO> getAllRewardCards() {
+        List<RewardCard> cards = rewardCardRepo.findAll();
+        return cards.stream().map(this::convertToDTO).toList();
     }
 
     public List<RewardTransaction> getTransactionHistory(String cardId) {
         RewardCard card = getRewardCardById(cardId);
         return rewardTransactionRepo.findByRewardCardOrderByTransactionDateDesc(card);
     }
+
+//    @Transactional
+//    public void activateCard(String cardId) {
+//        RewardCard card = getRewardCardById(cardId);
+//
+//        if (!card.isActive()) {           // Only update if needed
+//            card.setActive(true);
+//            rewardCardRepo.save(card);
+//        }
+//    }
+
+    @Transactional
+    public void activateCard(String cardId) {
+        RewardCard card = getRewardCardById(cardId);
+        System.out.println("=== BEFORE ACTIVATE === ID: " + card.getId() + " | Active: " + card.isActive()); // Debug
+
+        card.setActive(true);
+        RewardCard saved = rewardCardRepo.save(card);
+
+        System.out.println("=== AFTER ACTIVATE === ID: " + saved.getId() + " | Active: " + saved.isActive()); // Debug
+    }
+
 
     @Transactional
     public void expireOldPoints() {
@@ -195,24 +234,39 @@ public class RewardService {
         dto.setCardNumber(card.getCardNumber());
         dto.setTotalPoints(card.getTotalPoints());
         dto.setIssuedAt(card.getIssuedAt());
-        dto.setIsActive(card.isActive());
+        dto.setActive(card.isActive());
+
 
         if (card.getCustomer() != null) {
             RewardCardDTO.CustomerSummary summary = new RewardCardDTO.CustomerSummary();
             summary.setId(card.getCustomer().getId());
             summary.setName(card.getCustomer().getName());
             summary.setPhone(card.getCustomer().getPhone() != null
-                    ? card.getCustomer().getPhone().toString() : "");
+                    ? "0"+card.getCustomer().getPhone().toBigInteger() : "");
             dto.setCustomer(summary);
         }
 
         return dto;
     }
 
+//    @Transactional
+//    public void deactivateCard(String cardId) {
+//        RewardCard card = getRewardCardById(cardId);
+//
+//        if (card.isActive()) {            // Fixed condition
+//            card.setActive(false);
+//            rewardCardRepo.save(card);
+//        }
+//    }
+
     @Transactional
     public void deactivateCard(String cardId) {
         RewardCard card = getRewardCardById(cardId);
+        System.out.println("=== BEFORE DEACTIVATE === ID: " + card.getId() + " | Active: " + card.isActive());
+
         card.setActive(false);
-        rewardCardRepo.save(card);
+        RewardCard saved = rewardCardRepo.save(card);
+
+        System.out.println("=== AFTER DEACTIVATE === ID: " + saved.getId() + " | Active: " + saved.isActive());
     }
 }

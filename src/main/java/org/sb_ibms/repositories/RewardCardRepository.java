@@ -19,4 +19,6 @@ public interface RewardCardRepository extends JpaRepository<RewardCard, Long> {
     @EntityGraph(attributePaths = {"customer"})
     List<RewardCard> findAll();
 
+    Optional<RewardCard> findByCardNumber(String cardNumber);
+
 }
