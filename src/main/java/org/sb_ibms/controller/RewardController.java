@@ -107,6 +107,16 @@ public class RewardController {
         return ResponseEntity.ok().build();
     }
 
+//    @PostMapping("/pay")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
+//    public ResponseEntity<?> pay(
+//            @RequestParam Long customerId) {
+//
+//        return ResponseEntity.ok(
+//                bkashPaymentService.makePayment(customerId)
+//        );
+//    }
+
     /**
      * Redeem Points for Cashback
      */

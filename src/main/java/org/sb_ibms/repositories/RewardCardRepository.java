@@ -1,6 +1,6 @@
 package org.sb_ibms.repositories;
 
-import org.sb_ibms.models.Product;
+
 import org.sb_ibms.models.RewardCard;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

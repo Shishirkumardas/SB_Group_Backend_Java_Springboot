@@ -1,5 +1,6 @@
 package org.sb_ibms.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -13,11 +14,17 @@ public class RewardCard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "master_data_id", nullable = false, unique = true)
+//    private MasterData customer;
+
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "master_data_id", nullable = false, unique = true)
-    private MasterData customer;
+    @JoinColumn(name = "shopping_mall_customer_id",nullable = true, unique = true)
+    @JsonIgnore
+    private ShoppingMallCustomer customer;
 
     private String cardNumber;
 

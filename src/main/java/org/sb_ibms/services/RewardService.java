@@ -3,20 +3,18 @@ package org.sb_ibms.services;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.sb_ibms.dto.RewardCardDTO;
-import org.sb_ibms.enums.Role;
 import org.sb_ibms.models.MasterData;
 import org.sb_ibms.models.RewardCard;
 import org.sb_ibms.models.RewardTransaction;
-import org.sb_ibms.models.User;
-import org.sb_ibms.repositories.MasterDataRepository;
-import org.sb_ibms.repositories.RewardCardRepository;
-import org.sb_ibms.repositories.RewardTransactionRepository;
-import org.sb_ibms.repositories.UserRepository;
+import org.sb_ibms.models.ShoppingMallCustomer;
+import org.sb_ibms.repositories.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +24,7 @@ public class RewardService {
     private final UserRepository userRepo;
     private final CashbackService cashbackService;
     private final MasterDataRepository masterDataRepository;
+    private final ShoppingMallCustomerRepository shoppingMallCustomerRepository;
 
 
     @Transactional
@@ -37,7 +36,7 @@ public class RewardService {
 //            throw new IllegalArgumentException("Reward card can only be issued to SHOPPING_MALL_CUSTOMER role");
 //        }
 
-        MasterData customer = masterDataRepository.findById(Long.valueOf(customerId))
+        ShoppingMallCustomer customer = shoppingMallCustomerRepository.findById(Long.valueOf(customerId))
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + customerId));
 
 
@@ -57,7 +56,8 @@ public class RewardService {
 
 
         RewardCard savedCard = rewardCardRepo.save(card);
-
+        customer.setRewardCard(savedCard);
+        shoppingMallCustomerRepository.save(customer);
 
          addTransaction(savedCard, 0, "Reward Card Issued");
 
@@ -65,25 +65,32 @@ public class RewardService {
     }
 
     @Transactional
-    public void addPoints(String cardId, int points, String reason) {
+    public void addPoints(String cardNumber, int points, String reason) {
         if (points <= 0) {
-            throw new IllegalArgumentException("Points must be greater than 0");
+            log.info("No points to add for card: {} | Reason: {}", cardNumber, reason);
+            return;
         }
-        long id = Long.parseLong(cardId);
 
-        RewardCard card = rewardCardRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reward card not found"));
+        if (cardNumber == null || cardNumber.isBlank()) {
+            log.warn("Card number is empty or null");
+            return;
+        }
+
+        // Use findByCardNumber, NOT findById
+        RewardCard card = rewardCardRepo.findByCardNumber(cardNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Reward card not found: " + cardNumber));
 
         if (!card.isActive()) {
-            throw new IllegalStateException("Reward card is inactive");
+            throw new IllegalStateException("Reward card is inactive: " + cardNumber);
         }
 
         int previousPoints = card.getTotalPoints();
         card.setTotalPoints(previousPoints + points);
         rewardCardRepo.save(card);
 
-        // Transaction Log
         addTransaction(card, points, reason);
+
+        log.info("✅ Added {} points to card {} | {} → {}", points, cardNumber, previousPoints, card.getTotalPoints());
     }
 
     @Transactional
@@ -104,7 +111,7 @@ public class RewardService {
             throw new IllegalArgumentException("Insufficient points. Available: " + card.getTotalPoints());
         }
 
-        MasterData customer = card.getCustomer();
+        ShoppingMallCustomer customer = card.getCustomer();
 
         //1 point == 1 TK
         double cashbackAmount = pointsToRedeem * 1.0;
@@ -181,15 +188,6 @@ public class RewardService {
         return rewardTransactionRepo.findByRewardCardOrderByTransactionDateDesc(card);
     }
 
-//    @Transactional
-//    public void activateCard(String cardId) {
-//        RewardCard card = getRewardCardById(cardId);
-//
-//        if (!card.isActive()) {           // Only update if needed
-//            card.setActive(true);
-//            rewardCardRepo.save(card);
-//        }
-//    }
 
     @Transactional
     public void activateCard(String cardId) {

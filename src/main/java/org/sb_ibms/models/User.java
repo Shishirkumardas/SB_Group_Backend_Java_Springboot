@@ -5,6 +5,7 @@ import lombok.Data;
 import org.sb_ibms.enums.Role;
 
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,11 @@ public class User {
 
     private Long shoppingMallId;             // nullable – only for mall roles
     private String employeeCode;
+
+    // Performance Fields
+    private BigDecimal netSale;
+    private BigDecimal profit;
+    private BigDecimal commission;
 
     public User() {}
 

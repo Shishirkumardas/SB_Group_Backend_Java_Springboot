@@ -114,6 +114,17 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/products/**").authenticated()
                         .requestMatchers("/api/bkash/**").permitAll()
                         .requestMatchers("/api/rewards/").authenticated()
+                        .requestMatchers("/api/shoppingmall-products/**").permitAll()
+                        .requestMatchers("/api/shoppingmall-cashback/**").authenticated()
+                        .requestMatchers("/api/shoppingmall-master-data/**").hasRole("ADMIN")
+                        .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
+                        .requestMatchers("/api/shopping-mall-customer/**").authenticated()
+                        .requestMatchers("/api/shoppingMall-payments/**").permitAll()
+                        .requestMatchers("/api/pos/**").permitAll()
+
+
+
+
 
 
 
