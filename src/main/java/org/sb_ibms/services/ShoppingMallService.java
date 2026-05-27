@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.sb_ibms.dto.ShoppingMallCustomerFormDTO;
 import org.sb_ibms.models.Area;
+import org.sb_ibms.models.ShoppingMallArea;
 import org.sb_ibms.models.ShoppingMallCustomer;
 import org.sb_ibms.models.ShoppingMallSale;
 import org.sb_ibms.repositories.ShoppingMallCustomerRepository;
@@ -19,7 +20,7 @@ public class ShoppingMallService {
     private final ShoppingMallCustomerRepository customerRepo;
     private final ShoppingMallSaleRepository saleRepo;
     private final RewardService rewardService;
-    private final AreaService areaService;
+    private final ShoppingMallAreaService areaService;
     private final ShoppingMallCustomerRepository shoppingMallCustomerRepository;
 
     public ShoppingMallCustomer createCustomer(ShoppingMallCustomer customer) {
@@ -29,7 +30,7 @@ public class ShoppingMallService {
     @Transactional
     public ShoppingMallCustomer saveCustomerForm(ShoppingMallCustomerFormDTO dto) {
         ShoppingMallCustomer md =  new ShoppingMallCustomer();
-        Area area = areaService.getAreaById(dto.getAreaID());
+        ShoppingMallArea area = areaService.getAreaById(dto.getAreaID());
         md.setArea(area);
         md.setName(dto.getCustomerName());
         md.setArea(area);

@@ -3,10 +3,8 @@ package org.sb_ibms.services;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.sb_ibms.ResourceNotFoundException;
-import org.sb_ibms.dto.CustomerFormDTO;
 import org.sb_ibms.dto.ShoppingMallCustomerFormDTO;
-import org.sb_ibms.enums.PaymentMethod;
-import org.sb_ibms.models.Area;
+import org.sb_ibms.models.ShoppingMallArea;
 import org.sb_ibms.models.ShoppingMallCustomer;
 import org.sb_ibms.repositories.ShoppingMallCustomerRepository;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class ShoppingMallMasterDataService {
     private ShoppingMallCustomerRepository shoppingMallmasterDataRepository;
-    private AreaService areaService;
+    private ShoppingMallAreaService areaService;
 
 
     public ShoppingMallCustomer create(ShoppingMallCustomer data) {
@@ -67,7 +65,7 @@ public class ShoppingMallMasterDataService {
     @Transactional
     public ShoppingMallCustomer saveCustomerForm(ShoppingMallCustomerFormDTO dto) {
         ShoppingMallCustomer md =  new ShoppingMallCustomer();
-        Area area = areaService.getAreaById(dto.getAreaID());
+        ShoppingMallArea area = areaService.getAreaById(dto.getAreaID());
         md.setArea(area);
         md.setName(dto.getCustomerName());
         md.setArea(area);

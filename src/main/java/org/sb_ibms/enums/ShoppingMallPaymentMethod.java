@@ -9,11 +9,11 @@ public enum ShoppingMallPaymentMethod {
     BKASH,
     NAGAD,
     ROCKET,
-    BANK,
-    CARD;
+    CARD,
+    BANK;
 
     public static List<String> getAllMethods() {
-        return Arrays.stream(PaymentMethod.values())
+        return Arrays.stream(ShoppingMallPaymentMethod.values())
                 .map(Enum::name)
                 .collect(Collectors.toList());
     }

@@ -1,20 +1,14 @@
 package org.sb_ibms.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.sb_ibms.dto.PaymentRequest;
-import org.sb_ibms.dto.PaymentView;
 import org.sb_ibms.dto.ShoppingMallPaymentRequest;
 import org.sb_ibms.dto.ShoppingMallPaymentView;
 import org.sb_ibms.models.Payment;
 import org.sb_ibms.models.ShoppingMallPayments;
-import org.sb_ibms.repositories.MasterDataRepository;
 import org.sb_ibms.repositories.ShoppingMallCustomerRepository;
-import org.sb_ibms.services.PaymentService;
-import org.sb_ibms.services.PaymentService2;
 import org.sb_ibms.services.ShoppingMallPaymentInterface;
 import org.sb_ibms.services.ShoppingMallPaymentService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

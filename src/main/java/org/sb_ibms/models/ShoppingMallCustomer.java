@@ -24,8 +24,8 @@ public class ShoppingMallCustomer {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id", nullable = false)
-    private Area area;
+    @JoinColumn(name = "shoppingmall_area_id", nullable = true)
+    private ShoppingMallArea area;
 
     // Correct bidirectional mapping
     @OneToMany(mappedBy = "shoppingMallCustomer", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -113,14 +113,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
                         .requestMatchers("/uploads/products/**").authenticated()
                         .requestMatchers("/api/bkash/**").permitAll()
-                        .requestMatchers("/api/rewards/").authenticated()
-                        .requestMatchers("/api/shoppingmall-products/**").permitAll()
-                        .requestMatchers("/api/shoppingmall-cashback/**").authenticated()
+                        .requestMatchers("/api/rewards/").hasRole("ADMIN")
+                        .requestMatchers("/api/shoppingmall-products/**").hasRole("ADMIN")
+                        .requestMatchers("/api/shoppingmall-cashback/**").hasRole("ADMIN")
                         .requestMatchers("/api/shoppingmall-master-data/**").hasRole("ADMIN")
                         .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
-                        .requestMatchers("/api/shopping-mall-customer/**").authenticated()
-                        .requestMatchers("/api/shoppingMall-payments/**").permitAll()
-                        .requestMatchers("/api/pos/**").permitAll()
+                        .requestMatchers("/api/shopping-mall-customer/**").hasRole("ADMIN")
+                        .requestMatchers("/api/shoppingMall-payments/**").hasRole("ADMIN")
+                        .requestMatchers("/api/pos/**").hasRole("ADMIN")
 
 
 

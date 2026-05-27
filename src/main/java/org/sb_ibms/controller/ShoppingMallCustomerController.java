@@ -3,6 +3,7 @@ package org.sb_ibms.controller;
 import lombok.AllArgsConstructor;
 import org.sb_ibms.dto.ShoppingMallCustomerFormDTO;
 import org.sb_ibms.enums.PaymentMethod;
+import org.sb_ibms.enums.ShoppingMallPaymentMethod;
 import org.sb_ibms.services.BkashPaymentService;
 import org.sb_ibms.services.ShoppingMallService;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class ShoppingMallCustomerController {
 
     @GetMapping("/payment-methods")
     public ResponseEntity<List<String>> getAllPaymentMethods() {
-        List<String> methods = PaymentMethod.getAllMethods();
+        List<String> methods = ShoppingMallPaymentMethod.getAllMethods();
         return ResponseEntity.ok(methods);
     }
 }

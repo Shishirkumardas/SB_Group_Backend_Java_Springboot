@@ -8,6 +8,8 @@ public enum PaymentMethod {
     BKASH,
     NAGAD,
     ROCKET,
+    CASH,
+    CARD,
     BANK;
 
     public static List<String> getAllMethods() {

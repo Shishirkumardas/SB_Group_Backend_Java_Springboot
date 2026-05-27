@@ -84,7 +84,7 @@ public class ShoppingMallCashbackService {
         }
 
         BigDecimal quantity = master.getQuantity();
-        Area area = master.getArea();
+        ShoppingMallArea area = master.getArea();
         String areaName = area != null ? area.getName() : "Unknown Area";
         BigDecimal totalPurchase = master.getPurchaseAmount();
         String name =master.getName();
