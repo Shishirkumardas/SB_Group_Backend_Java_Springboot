@@ -17,6 +17,14 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    public String getRole() {
+        return user.getRole().toString();
+    }
+
+    public String getId() {
+        return user.getId();
+    }
+
     @Override
     @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -30,6 +38,14 @@ public class CustomUserDetails implements UserDetails {
     @NonNull
     public String getUsername()
     { return user.getEmail(); }
+
+    public Long shoppingMallId()
+    {
+        return user.getShoppingMallId();
+    }
+
+
+
     @Override public boolean isAccountNonExpired()
     { return true; }
     @Override public boolean isAccountNonLocked()

@@ -113,14 +113,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
                         .requestMatchers("/uploads/products/**").authenticated()
                         .requestMatchers("/api/bkash/**").permitAll()
-                        .requestMatchers("/api/rewards/").hasRole("ADMIN")
-                        .requestMatchers("/api/shoppingmall-products/**").hasRole("ADMIN")
-                        .requestMatchers("/api/shoppingmall-cashback/**").hasRole("ADMIN")
-                        .requestMatchers("/api/shoppingmall-master-data/**").hasRole("ADMIN")
-                        .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
-                        .requestMatchers("/api/shopping-mall-customer/**").hasRole("ADMIN")
-                        .requestMatchers("/api/shoppingMall-payments/**").hasRole("ADMIN")
-                        .requestMatchers("/api/pos/**").hasRole("ADMIN")
+
+                        //ShoppingMall Roles
+                        .requestMatchers("/api/rewards/").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shoppingmall-products/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shoppingmall-cashback/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shoppingmall-master-data/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shopping-mall-customer/submit").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shopping-mall-customer/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shoppingMall-payments/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/pos/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
 
 
 

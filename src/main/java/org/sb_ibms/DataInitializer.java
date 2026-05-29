@@ -26,6 +26,16 @@ public class DataInitializer {
                 System.out.println("✅ Admin user created");
             }
 
+            if (userRepository.findByEmail("shoppingmall1@example.com").isEmpty()) {
+                User shopping_mall_manager_maona = new User(
+                        "shoppingmall1@example.com",
+                        passwordEncoder.encode("shoppingMall123"),
+                        Role.SHOPPING_MALL_MANAGER
+                );
+                userRepository.save(shopping_mall_manager_maona);
+                System.out.println("✅ ShoppingMall user created");
+            }
+
             if (userRepository.findByEmail("customer@example.com").isEmpty()) {
                 User customer = new User(
                         "customer@example.com",

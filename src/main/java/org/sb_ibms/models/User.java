@@ -30,6 +30,8 @@ public class User {
     private Role role;
     private String address;
 
+
+
     // Hierarchy (only for internal roles like GM, AGM, ME, etc.)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
@@ -39,7 +41,10 @@ public class User {
     private List<User> subordinates = new ArrayList<>();
 
 
-    private Long shoppingMallId;             // nullable – only for mall roles
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
+    // nullable – only for mall roles
     private String employeeCode;
 
     // Performance Fields

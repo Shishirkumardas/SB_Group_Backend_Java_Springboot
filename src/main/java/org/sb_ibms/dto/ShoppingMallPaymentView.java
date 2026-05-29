@@ -13,7 +13,8 @@ public class ShoppingMallPaymentView {
     private BigDecimal paidAmount;
     private ShoppingMallPaymentMethod paymentMethod;
     private String customerName;
-    private BigDecimal customerPhone;
+    private String customerPhone;
+//    private Long shoppingMallId;
 
     // Constructor matching the query
     public ShoppingMallPaymentView(LocalDate date,
@@ -25,6 +26,7 @@ public class ShoppingMallPaymentView {
         this.paidAmount = paidAmount;
         this.paymentMethod = paymentMethod;
         this.customerName = customerName;
-        this.customerPhone = customerPhone;
+        this.customerPhone = "0"+ customerPhone.toBigInteger();
+//        this.shoppingMallId = ShoppingMallId;
     }
 }

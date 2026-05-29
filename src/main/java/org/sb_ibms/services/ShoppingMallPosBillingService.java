@@ -98,6 +98,7 @@ public class ShoppingMallPosBillingService {
             if (customer.getPaidAmount() == null) customer.setPaidAmount(BigDecimal.ZERO);
             if (customer.getPurchaseAmount() == null) customer.setPurchaseAmount(BigDecimal.ZERO);
 
+            customer.setPurchaseAmount(customer.getPurchaseAmount().add(finalAmount));
             customer.setPaidAmount(customer.getPaidAmount().add(finalAmount));
             customer.setDueAmount(customer.getPurchaseAmount().subtract(customer.getPaidAmount()));
 
