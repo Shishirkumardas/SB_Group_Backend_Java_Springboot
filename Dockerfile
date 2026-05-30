@@ -1,12 +1,30 @@
-FROM eclipse-temurin:17-jdk-jammy
-
+# ====================== BUILD STAGE ======================
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-COPY . .
-
+# Copy Maven files first (for better caching)
+COPY pom.xml .
+COPY .mvn/ .mvn
+COPY mvnw mvnw
 RUN chmod +x mvnw
+
+# Download dependencies (cached layer)
+RUN ./mvnw dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application
 RUN ./mvnw clean package -DskipTests
 
-EXPOSE 8082
+# ====================== RUNTIME STAGE ======================
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
 
-CMD ["java", "-jar", "target/sbgroup2-0.0.1-SNAPSHOT.jar"]
+# Copy the built JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+# Run the app
+ENTRYPOINT ["java", "-jar", "app.jar"]
