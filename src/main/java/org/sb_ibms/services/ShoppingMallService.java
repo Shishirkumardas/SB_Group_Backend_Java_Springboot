@@ -5,11 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.sb_ibms.dto.MallListDTO;
 import org.sb_ibms.dto.ShoppingMallCustomerFormDTO;
 import org.sb_ibms.dto.ShoppingMallRequest;
+import org.sb_ibms.enums.OrderStatus;
 import org.sb_ibms.models.*;
 import org.sb_ibms.repositories.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -34,17 +36,48 @@ public class ShoppingMallService {
 
     @Transactional
     public ShoppingMallCustomer saveCustomerForm(ShoppingMallCustomerFormDTO dto) {
-        ShoppingMallCustomer md = new ShoppingMallCustomer();
+        Long mallId = shoppingMallContext.getCurrentMallId();
+
+        if (mallId == null) {
+            throw new RuntimeException("Please select a shopping mall first.");
+        }
+
+        if (dto.getAreaID() == null || dto.getAreaID() == 0) {
+            throw new RuntimeException("Please select a valid Area.");
+        }
+
+        System.out.println("================================");
+        System.out.println("DTO AreaID = " + dto.getAreaID());
+
+
         ShoppingMallArea area = areaService.getAreaById(dto.getAreaID());
+        System.out.println("Loaded Area ID = " + area.getId());
+        System.out.println("Loaded Area Name = " + area.getName());
+
+        // Security Check
+        if (area.getShoppingMallId() != null && !mallId.equals(area.getShoppingMallId())) {
+            throw new RuntimeException("This area does not belong to your selected mall.");
+        }
+
+        ShoppingMallCustomer md = new ShoppingMallCustomer();
 
         md.setArea(area);
+
+
+        System.out.println("Customer Area ID = " + md.getArea().getId());
+        System.out.println("================================");
         md.setName(dto.getCustomerName());
         md.setPhone(dto.getPhoneNumber());
         md.setNid(dto.getNid());
+        md.setShoppingMallId(mallId);
 
-        ShoppingMallCustomer saved = shoppingMallCustomerRepository.save(md);
-        areaService.recalculateArea(area.getId());
-        return saved;
+        // Default values
+        md.setPurchaseAmount(BigDecimal.ZERO);
+        md.setPaidAmount(BigDecimal.ZERO);
+        md.setDueAmount(BigDecimal.ZERO);
+        md.setStatus(OrderStatus.PENDING);
+
+        return shoppingMallCustomerRepository.save(md);
     }
 
     // ==================== Shopping Mall CRUD ====================
@@ -89,13 +122,20 @@ public class ShoppingMallService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
-        String userId = user.getId();   // UUID as String
+        String userId = user.getId();
 
-        // Prevent duplicate assignment
+        // Delete existing assignment first (optional)
+        mappingRepository.deleteByUserIdAndShoppingMallId(userId, mallId);
+        // Prevent duplicate assignment in mapping table
         if (mappingRepository.existsByUserIdAndShoppingMallId(userId, mallId)) {
-            throw new RuntimeException("This manager is already assigned to the mall");
+            throw new RuntimeException("This manager is already assigned to this mall");
         }
 
+        // === CRITICAL: Update shopping_mall_id in users table ===
+        user.setShoppingMallId(mallId);
+        userRepository.save(user);                    // ← This was missing
+
+        // Create mapping entry (for supporting multiple malls in future)
         UserShoppingMallMapping mapping = new UserShoppingMallMapping();
         mapping.setUserId(userId);
         mapping.setShoppingMallId(mallId);
@@ -162,6 +202,17 @@ public class ShoppingMallService {
             return idStr;
         }
         return null;
+    }
+    public List<ShoppingMallCustomer> searchCustomers(String query) {
+        Long mallId = shoppingMallContext.getCurrentMallId();
+
+        if (mallId == null) {
+            // Admin can search all customers
+            return shoppingMallCustomerRepository.searchByNameOrPhone(query);
+        } else {
+            // Manager can only search in their mall
+            return shoppingMallCustomerRepository.searchByNameOrPhoneInMall(query, mallId);
+        }
     }
 
     private boolean isShoppingMallManager(String role) {

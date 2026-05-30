@@ -55,7 +55,7 @@ public class ShoppingMallController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================== Mall Selection for Managers ====================
+    // ==================== Mall Selection ====================
 
     @GetMapping("/my-malls")
     public ResponseEntity<List<MallListDTO>> getMyMalls() {
@@ -77,6 +77,8 @@ public class ShoppingMallController {
         }
 
         currentMallService.setCurrentMall(request.getShoppingMallId());
+        System.out.println("🎯 Mall selection endpoint called successfully for mall: " + request.getShoppingMallId());
+
         return ResponseEntity.ok("Shopping mall selected successfully");
     }
 
@@ -86,16 +88,25 @@ public class ShoppingMallController {
         return ResponseEntity.ok("Current mall selection cleared");
     }
 
-    // ==================== Manager Assignment (Admin Only) ====================
+    // ==================== Manager Assignment (Using Email) ====================
 
     @PostMapping("/{mallId}/assign-manager")
     public ResponseEntity<String> assignManager(
             @PathVariable Long mallId,
-            @RequestParam String email) {     // Changed to email
+            @RequestParam String email) {
+
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
 
         String adminId = getCurrentUserId();
-        shoppingMallService.assignManagerToMall(email, mallId, adminId);
-        return ResponseEntity.ok("Manager assigned successfully");
+
+        try {
+            shoppingMallService.assignManagerToMall(email.trim(), mallId, adminId);
+            return ResponseEntity.ok("Manager assigned successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // Helper method
@@ -104,7 +115,6 @@ public class ShoppingMallController {
 
         if (auth != null && auth.getPrincipal() instanceof org.sb_ibms.models.CustomUserDetails user) {
             String idStr = user.getId();
-
             if (idStr == null || idStr.trim().isEmpty() || "null".equals(idStr)) {
                 return null;
             }

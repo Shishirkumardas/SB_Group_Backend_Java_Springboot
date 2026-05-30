@@ -27,6 +27,9 @@ public class ShoppingMallCustomer {
     @JoinColumn(name = "shoppingmall_area_id", nullable = true)
     private ShoppingMallArea area;
 
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
     // Correct bidirectional mapping
     @OneToMany(mappedBy = "shoppingMallCustomer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ShoppingMallPayments> payments = new ArrayList<>();
@@ -71,4 +74,6 @@ public class ShoppingMallCustomer {
         if (paidAmount == null || purchaseAmount == null) return false;
         return paidAmount.compareTo(purchaseAmount) == 0;
     }
+
+
 }

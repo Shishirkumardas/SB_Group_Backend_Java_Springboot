@@ -20,6 +20,9 @@ public class ShoppingMallSale {
     @JoinColumn(name = "shopping_mall_customer_id")
     private ShoppingMallCustomer customer;
 
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
     private LocalDate saleDate;
     private BigDecimal totalAmount;
     private BigDecimal discount;

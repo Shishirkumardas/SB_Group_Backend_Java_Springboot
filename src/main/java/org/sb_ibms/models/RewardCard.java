@@ -26,6 +26,9 @@ public class RewardCard {
     @JsonIgnore
     private ShoppingMallCustomer customer;
 
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
     private String cardNumber;
 
     private int totalPoints = 0;

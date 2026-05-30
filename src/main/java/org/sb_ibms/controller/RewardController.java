@@ -23,38 +23,27 @@ import java.util.List;
         exposedHeaders = "Set-Cookie"
 )
 public class RewardController {
+
     private final RewardService rewardService;
 
-    /**
-     * Issue Reward Card to a Shopping Mall Customer
-     */
     @PostMapping("/issue")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
     public ResponseEntity<RewardCard> issueRewardCard(@RequestParam String customerId) {
-        RewardCard card = rewardService.issueRewardCard(customerId);
-        return ResponseEntity.ok(card);
+        return ResponseEntity.ok(rewardService.issueRewardCard(customerId));
     }
 
-
-    // Add this method in RewardController.java
     @GetMapping("/{cardId}/barcode")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
     public ResponseEntity<byte[]> generateBarcode(@PathVariable String cardId) {
         try {
             RewardCard card = rewardService.getRewardCardById(cardId);
-
-            // Using ZXing library (recommended)
             BarcodeGenerator generator = new BarcodeGenerator();
-            byte[] barcodeImage = generator.generateBarcode(
-                    card.getCardNumber(),
-                    900,
-                    260
-            );
+            byte[] image = generator.generateBarcode(card.getCardNumber(), 900, 260);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .header("Content-Disposition", "inline; filename=\"barcode-" + cardId + ".png\"")
-                    .body(barcodeImage);
+                    .body(image);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -62,136 +51,69 @@ public class RewardController {
 
     @GetMapping("/{cardId}/qr")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
-    public ResponseEntity<byte[]> generateQRCode(
-            @PathVariable String cardId
-    ) {
-
+    public ResponseEntity<byte[]> generateQRCode(@PathVariable String cardId) {
         try {
-
-            RewardCard card =
-                    rewardService.getRewardCardById(cardId);
-
+            RewardCard card = rewardService.getRewardCardById(cardId);
             BarcodeGenerator generator = new BarcodeGenerator();
-            byte[] qrImage =
-                    generator.generateQRCode(
-                            card.getCardNumber(),
-                            400,
-                            400
-                    );
+            byte[] image = generator.generateQRCode(card.getCardNumber(), 400, 400);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
-                    .header(
-                            "Content-Disposition",
-                            "inline; filename=\"qr-" + cardId + ".png\""
-                    )
-                    .body(qrImage);
-
+                    .header("Content-Disposition", "inline; filename=\"qr-" + cardId + ".png\"")
+                    .body(image);
         } catch (Exception e) {
-
             return ResponseEntity.badRequest().build();
         }
     }
 
-    /**
-     * Add Points to a Reward Card
-     */
     @PostMapping("/add-points")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
-    public ResponseEntity<Void> addPoints(
-            @RequestParam String cardId,
-            @RequestParam int points,
-            @RequestParam String reason) {
-
+    public ResponseEntity<Void> addPoints(@RequestParam String cardId,
+                                          @RequestParam int points,
+                                          @RequestParam String reason) {
         rewardService.addPoints(cardId, points, reason);
         return ResponseEntity.ok().build();
     }
 
-//    @PostMapping("/pay")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
-//    public ResponseEntity<?> pay(
-//            @RequestParam Long customerId) {
-//
-//        return ResponseEntity.ok(
-//                bkashPaymentService.makePayment(customerId)
-//        );
-//    }
-
-    /**
-     * Redeem Points for Cashback
-     */
     @PostMapping("/redeem")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_CUSTOMER')")
-    public ResponseEntity<Void> redeemPoints(
-            @RequestParam String cardId,
-            @RequestParam int pointsToRedeem,
-            @RequestParam(required = false) String remarks) {
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
+    public ResponseEntity<Void> redeemPoints(@RequestParam String cardId,
+                                             @RequestParam int pointsToRedeem,
+                                             @RequestParam(required = false) String remarks) {
         rewardService.redeemPointsForCashback(cardId, pointsToRedeem, remarks);
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Get Reward Card by Customer ID
-     */
     @GetMapping("/customer/{customerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
     public ResponseEntity<RewardCard> getRewardCardByCustomer(@PathVariable String customerId) {
-        RewardCard card = rewardService.getRewardCardByCustomer(customerId);
-        return ResponseEntity.ok(card);
+        return ResponseEntity.ok(rewardService.getRewardCardByCustomer(customerId));
     }
 
     @GetMapping("/number/{cardNumber}")
-    @PreAuthorize(
-            "hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')"
-    )
-    public ResponseEntity<RewardCardDTO> getByCardNumber(
-            @PathVariable String cardNumber
-    ) {
-
-        try {
-
-            RewardCard card =
-                    rewardService.getRewardCardByNumber(
-                            cardNumber
-                    );
-
-            RewardCardDTO dto =
-                    new RewardCardDTO();
-
-            dto.setId(card.getId());
-            dto.setCardNumber(card.getCardNumber());
-            dto.setTotalPoints(card.getTotalPoints());
-            dto.setActive(card.isActive());
-
-            RewardCardDTO.CustomerSummary customerDto =
-                    new RewardCardDTO.CustomerSummary();
-
-            customerDto.setId(
-                    card.getCustomer().getId()
-            );
-
-            customerDto.setName(
-                    card.getCustomer().getName()
-            );
-
-            dto.setCustomer(customerDto);
-
-            return ResponseEntity.ok(dto);
-
-        } catch (Exception e) {
-
-            return ResponseEntity.notFound().build();
-        }
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
+    public ResponseEntity<RewardCardDTO> getByCardNumber(@PathVariable String cardNumber) {
+        RewardCard card = rewardService.getRewardCardByNumber(cardNumber);
+        return ResponseEntity.ok(rewardService.getRewardCardByIdDTO(String.valueOf(card.getId())));
     }
 
-    /**
-     * Get Reward Card by Card ID
-     */
     @GetMapping("/{cardId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
     public ResponseEntity<RewardCardDTO> getRewardCard(@PathVariable String cardId) {
-        RewardCardDTO card = rewardService.getRewardCardByIdDTO(cardId);
-        return ResponseEntity.ok(card);
+        return ResponseEntity.ok(rewardService.getRewardCardByIdDTO(cardId));
     }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
+    public ResponseEntity<List<RewardCardDTO>> getAllRewardCards() {
+        return ResponseEntity.ok(rewardService.getAllRewardCards());
+    }
+
+//    @GetMapping("/{cardId}/transactions")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
+//    public ResponseEntity<List<RewardTransaction>> getTransactionHistory(@PathVariable String cardId) {
+//        return ResponseEntity.ok(rewardService.getTransactionHistory(cardId));
+//    }
 
     @PutMapping("/{cardId}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
@@ -200,38 +122,10 @@ public class RewardController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/all")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
-//    public ResponseEntity<List<RewardCard>> getAllRewardCards() {
-//        List<RewardCard> cards = rewardService.getAllRewardCards();
-//        return ResponseEntity.ok(cards);
-//    }
-
-    @GetMapping("/all")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER', 'SHOPPING_MALL_ASSISTANT')")
-    public ResponseEntity<List<RewardCardDTO>> getAllRewardCards() {
-        List<RewardCardDTO> cards = rewardService.getAllRewardCards();
-        return ResponseEntity.ok(cards);
-    }
-
-    /**
-     * Get Transaction History of a Card
-     */
-    @GetMapping("/{cardId}/transactions")
-    public ResponseEntity<List<RewardTransaction>> getTransactionHistory(@PathVariable String cardId) {
-        List<RewardTransaction> transactions = rewardService.getTransactionHistory(cardId);
-        return ResponseEntity.ok(transactions);
-    }
-
-    /**
-     * Deactivate a Reward Card
-     */
     @PutMapping("/{cardId}/deactivate")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
     public ResponseEntity<Void> deactivateCard(@PathVariable String cardId) {
         rewardService.deactivateCard(cardId);
         return ResponseEntity.ok().build();
     }
-
-
 }

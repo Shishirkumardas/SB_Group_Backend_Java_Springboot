@@ -8,6 +8,7 @@ import org.sb_ibms.dto.ShoppingMallPaymentView;
 import org.sb_ibms.models.ShoppingMallCustomer;
 import org.sb_ibms.repositories.ShoppingMallCahbackPaymentRepository;
 import org.sb_ibms.repositories.ShoppingMallCustomerRepository;
+import org.sb_ibms.services.ShoppingMallContext;
 import org.sb_ibms.services.ShoppingMallMasterDataService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,17 @@ public class ShoppingMallMasterDataController {
     private final ShoppingMallCustomerRepository repo;
     private final ShoppingMallMasterDataService masterDataService;
     private final ShoppingMallCahbackPaymentRepository cashbackPaymentRepository;
+    private final ShoppingMallContext shoppingMallContext;
+
+//    @GetMapping
+//    public List<ShoppingMallCustomer> getAll() {
+//        return repo.findAll();
+//    }
 
     @GetMapping
     public List<ShoppingMallCustomer> getAll() {
-        return repo.findAll();
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        return repo.findByShoppingMallId(mallId);           // ← Fixed
     }
 
     @GetMapping("/masterData")
@@ -58,8 +66,15 @@ public class ShoppingMallMasterDataController {
 //    }
 
 
+//    @PostMapping
+//    public ShoppingMallCustomer create(@RequestBody ShoppingMallCustomer masterData) {
+//        return masterDataService.create(masterData);
+//    }
+
     @PostMapping
     public ShoppingMallCustomer create(@RequestBody ShoppingMallCustomer masterData) {
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        masterData.setShoppingMallId(mallId);          // ← Important
         return masterDataService.create(masterData);
     }
 
@@ -74,18 +89,35 @@ public class ShoppingMallMasterDataController {
     }
 
 
-    @GetMapping("/payments")
-    public List<ShoppingMallPaymentView> payments() {
-        return repo.getPayments();
-    }
+//    @GetMapping("/payments")
+//    public List<ShoppingMallPaymentView> payments() {
+//        return repo.getPayments();
+//    }
+//
+//    @GetMapping("/purchases")
+//    public List<PurchaseView> purchases() {
+//        return repo.getPurchases();
+//    }
+//
+//    @GetMapping("/summary")
+//    public OverallSummary summary() {
+//        return repo.getSummary();
+//    }
+@GetMapping("/payments")
+public List<ShoppingMallPaymentView> payments() {
+    Long mallId = shoppingMallContext.getCurrentMallId();
+    return repo.getPayments(mallId);
+}
 
     @GetMapping("/purchases")
     public List<PurchaseView> purchases() {
-        return repo.getPurchases();
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        return repo.getPurchases(mallId);
     }
 
     @GetMapping("/summary")
     public OverallSummary summary() {
-        return repo.getSummary();
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        return repo.getSummary(mallId);
     }
 }

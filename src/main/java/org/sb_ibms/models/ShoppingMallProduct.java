@@ -13,6 +13,10 @@ public class ShoppingMallProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
+
     private String barcode;
     private String name;
     private BigDecimal price;

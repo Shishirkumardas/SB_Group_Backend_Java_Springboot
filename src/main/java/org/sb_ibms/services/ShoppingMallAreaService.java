@@ -22,7 +22,7 @@ public class ShoppingMallAreaService {
     private ShoppingMallCahbackPaymentRepository cashbackRepo;
 
 
-    public ShoppingMallArea updateArea(Long id, Area updatedArea) {
+    public ShoppingMallArea updateArea(Long id, ShoppingMallArea updatedArea) {
         ShoppingMallArea area = areaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Area not found"));
 
@@ -57,6 +57,22 @@ public class ShoppingMallAreaService {
         area.setPackageQuantity(totalQuantity);
 
         return areaRepository.save(area);
+    }
+
+    public ShoppingMallArea getAreaByIdWithMallCheck(Long areaId, Long mallId) {
+        if (areaId == null) {
+            throw new RuntimeException("Area ID is required");
+        }
+
+        ShoppingMallArea area = areaRepository.findById(areaId)
+                .orElseThrow(() -> new RuntimeException("Area not found with ID: " + areaId));
+
+        // Security check for managers
+        if (mallId != null && !mallId.equals(area.getShoppingMallId())) {
+            throw new RuntimeException("Access denied: This area belongs to another shopping mall");
+        }
+
+        return area;
     }
 
     @Transactional

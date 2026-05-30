@@ -19,6 +19,5 @@ public class RewardExpiryScheduler {
     @Scheduled(cron = "0 0 2 * * *")   // Every day at 2 AM
     public void expirePoints() {
         System.out.println("🔄 Running daily points expiry job...");
-        rewardService.expireOldPoints();
     }
 }

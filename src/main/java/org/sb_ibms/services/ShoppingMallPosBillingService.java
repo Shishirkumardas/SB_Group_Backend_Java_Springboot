@@ -21,8 +21,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static reactor.netty.http.HttpConnectionLiveness.log;
-
 @Service
 @RequiredArgsConstructor
 public class ShoppingMallPosBillingService {
@@ -31,32 +29,35 @@ public class ShoppingMallPosBillingService {
     private final ShoppingMallCustomerRepository customerRepo;
     private final ShoppingMallPaymentRepository paymentRepo;
     private final RewardService rewardService;
+    private final ShoppingMallContext shoppingMallContext;
+    private final ShoppingMallProductRepository shoppingMallProductRepository;
+    private final ShoppingMallProductService productService;
 
+    // Delegate to ProductService for better consistency
     public ShoppingMallProduct findByBarcode(String barcode) {
-        return productRepo.findByBarcode(barcode)
-                .orElseThrow(() -> new RuntimeException("Product not found with barcode: " + barcode));
+        return productService.getProductByBarcode(barcode);   // Reuse logic
     }
 
     public ShoppingMallProduct findById(Long id) {
-        return productRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with barcode: " + id));
+        return productService.getProductById(id);
     }
 
     public ShoppingMallProduct findByName(String name) {
-        return productRepo.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Product not found with barcode: " + name));
+        return productService.getProductByName(name);
     }
 
     public ShoppingMallCustomer findCustomerByPhone(BigDecimal phone) {
-        return customerRepo.findByPhone(phone);
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        return customerRepo.findByPhoneAndShoppingMallId(phone, mallId);  // Return null if not found (common in POS)
     }
 
     @Transactional
     public BillingResponse createBill(BillingRequest req) {
-        ShoppingMallCustomer customer = null;
+        Long mallId = shoppingMallContext.getCurrentMallId();
 
+        ShoppingMallCustomer customer = null;
         if (req.getCustomerPhone() != null) {
-            customer = customerRepo.findByPhone(req.getCustomerPhone());
+            customer = findCustomerByPhone(req.getCustomerPhone());
         }
 
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -74,6 +75,7 @@ public class ShoppingMallPosBillingService {
 
             subtotal = subtotal.add(itemTotal);
 
+            // Update stock
             product.setStock(product.getStock() - itemReq.getQuantity());
             productRepo.save(product);
 
@@ -84,7 +86,7 @@ public class ShoppingMallPosBillingService {
         BigDecimal finalAmount = subtotal.subtract(discount);
 
         if (customer != null) {
-            // Save Payment
+            // Create Payment Record
             ShoppingMallPayments payment = new ShoppingMallPayments();
             payment.setShoppingMallCustomer(customer);
             payment.setPaidAmount(finalAmount);
@@ -92,41 +94,30 @@ public class ShoppingMallPosBillingService {
             payment.setTrxId(req.getTrxId());
             payment.setPaymentDate(LocalDate.now());
             payment.setStatus(PaymentStatus.SUCCEEDED);
+            payment.setShoppingMallId(mallId);
             paymentRepo.save(payment);
 
-            // Update Customer Totals
-            if (customer.getPaidAmount() == null) customer.setPaidAmount(BigDecimal.ZERO);
-            if (customer.getPurchaseAmount() == null) customer.setPurchaseAmount(BigDecimal.ZERO);
-
-            customer.setPurchaseAmount(customer.getPurchaseAmount().add(finalAmount));
-            customer.setPaidAmount(customer.getPaidAmount().add(finalAmount));
+            // Update Customer
+            customer.setPurchaseAmount((customer.getPurchaseAmount() != null ? customer.getPurchaseAmount() : BigDecimal.ZERO).add(finalAmount));
+            customer.setPaidAmount((customer.getPaidAmount() != null ? customer.getPaidAmount() : BigDecimal.ZERO).add(finalAmount));
             customer.setDueAmount(customer.getPurchaseAmount().subtract(customer.getPaidAmount()));
+            customer.setShoppingMallId(mallId);
+            customerRepo.save(customer);
 
-            // === REWARD POINTS - FIXED ===
+            // Reward Points
             if (finalAmount.compareTo(BigDecimal.valueOf(2000)) >= 0) {
-                int points = finalAmount.intValue() / 2;   // Adjust logic as needed
-
+                int points = finalAmount.intValue() / 2;
                 if (points > 0) {
                     try {
-                        // Using your existing method
-                        RewardCard rewardCard = rewardService.getRewardCardById(
-                                String.valueOf(customer.getId())
-                        );
-
-                        if (rewardCard != null) {
-                            rewardService.addPoints(rewardCard.getCardNumber(), points,
-                                    "Purchased items worth " + finalAmount);
-                        } else {
-                            log.warn("No reward card found for customer ID: {}", customer.getId());
+                        RewardCard card = rewardService.getRewardCardByCustomer(String.valueOf(customer.getId()));
+                        if (card != null) {
+                            rewardService.addPoints(card.getCardNumber(), points, "Sale worth " + finalAmount);
                         }
                     } catch (Exception e) {
-                        log.error("Failed to add reward points for customer {}: {}", customer.getId(), e.getMessage());
-                        // Important: Do not rethrow - let billing succeed
+                        System.err.println("Reward points error: " + e.getMessage());
                     }
                 }
             }
-
-            customerRepo.save(customer);
         }
 
         return new BillingResponse(

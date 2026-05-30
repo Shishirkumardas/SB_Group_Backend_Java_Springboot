@@ -26,6 +26,10 @@ public class ShoppingMallPayments {
     @JsonIgnore
     @JoinColumn(name = "shopping_mall_customers_id", nullable = false)
     private ShoppingMallCustomer shoppingMallCustomer;
+
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
     @Enumerated(EnumType.STRING)
     private ShoppingMallPaymentMethod paymentMethod;
     private BigDecimal paidAmount;

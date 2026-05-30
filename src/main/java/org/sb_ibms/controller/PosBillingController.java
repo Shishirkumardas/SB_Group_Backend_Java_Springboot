@@ -20,21 +20,18 @@ public class PosBillingController {
 
     private final ShoppingMallPosBillingService posService;
 
-    @PostMapping("/scan")
+    @GetMapping("/product/barcode")
     public ResponseEntity<ShoppingMallProduct> scanBarcode(@RequestParam String barcode) {
         return ResponseEntity.ok(posService.findByBarcode(barcode));
     }
+
     @GetMapping("/product/name")
-    public ResponseEntity<ShoppingMallProduct> findByName(
-            @RequestParam String name
-    ) {
+    public ResponseEntity<ShoppingMallProduct> findByName(@RequestParam String name) {
         return ResponseEntity.ok(posService.findByName(name));
     }
 
     @GetMapping("/product/id")
-    public ResponseEntity<ShoppingMallProduct> findById(
-            @RequestParam Long id
-    ) {
+    public ResponseEntity<ShoppingMallProduct> findById(@RequestParam Long id) {
         return ResponseEntity.ok(posService.findById(id));
     }
 
@@ -46,6 +43,8 @@ public class PosBillingController {
     @GetMapping("/customer/search")
     public ResponseEntity<ShoppingMallCustomer> findCustomerByPhone(@RequestParam String phone) {
         BigDecimal phoneNumber = new BigDecimal(phone.trim());
-        return ResponseEntity.ok(posService.findCustomerByPhone(phoneNumber));
+        ShoppingMallCustomer customer = posService.findCustomerByPhone(phoneNumber);
+        return customer != null ? ResponseEntity.ok(customer)
+                : ResponseEntity.notFound().build();
     }
 }

@@ -6,6 +6,7 @@ import org.sb_ibms.dto.ShoppingMallPaymentView;
 import org.sb_ibms.models.Payment;
 import org.sb_ibms.models.ShoppingMallPayments;
 import org.sb_ibms.repositories.ShoppingMallCustomerRepository;
+import org.sb_ibms.services.ShoppingMallContext;
 import org.sb_ibms.services.ShoppingMallPaymentInterface;
 import org.sb_ibms.services.ShoppingMallPaymentService;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +22,31 @@ public class ShoppingPaymentController {
     private final ShoppingMallPaymentInterface paymentService2;
     private final ShoppingMallPaymentService paymentService;
     private final ShoppingMallCustomerRepository masterDataRepository;
+    private final ShoppingMallContext shoppingMallContext;
 
 
+
+//    @GetMapping
+//    public List<ShoppingMallPaymentView> payments() {
+//        return masterDataRepository.getPayments();
+//    }
+//
+//
+//    @PostMapping
+//    public ShoppingMallPayments createPayment(@RequestBody ShoppingMallPayments payment) {
+//        return paymentService.createPayment(payment);
+//    }
 
     @GetMapping
     public List<ShoppingMallPaymentView> payments() {
-        return masterDataRepository.getPayments();
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        return masterDataRepository.getPayments(mallId);
     }
-
 
     @PostMapping
     public ShoppingMallPayments createPayment(@RequestBody ShoppingMallPayments payment) {
+        Long mallId = shoppingMallContext.getCurrentMallId();
+        payment.setShoppingMallId(mallId);
         return paymentService.createPayment(payment);
     }
 
@@ -59,6 +74,7 @@ public class ShoppingPaymentController {
     public List<ShoppingMallPayments> getCustomerPayments(@PathVariable Long customerId) {
         return paymentService2.getPayments(customerId);
     }
+
 
     @GetMapping("/customer/{customerId}/summary")
     public ResponseEntity<?> getCustomerPaymentSummary(@PathVariable Long customerId) {

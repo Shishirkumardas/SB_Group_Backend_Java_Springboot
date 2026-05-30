@@ -57,20 +57,20 @@ public interface ShoppingMallCustomerRepository extends JpaRepository<ShoppingMa
             @Param("date") LocalDate date
     );
 
-    @Query("""
-    SELECT new org.sb_ibms.dto.ShoppingMallPaymentView(
-        p.paymentDate,
-        p.paidAmount,
-        p.paymentMethod,
-        c.name,
-        c.phone
-    )
-    FROM ShoppingMallPayments p
-    JOIN p.shoppingMallCustomer c
-    WHERE p.paidAmount > 0
-    ORDER BY p.paymentDate DESC
-""")
-    List<ShoppingMallPaymentView> getPayments();
+//    @Query("""
+//    SELECT new org.sb_ibms.dto.ShoppingMallPaymentView(
+//        p.paymentDate,
+//        p.paidAmount,
+//        p.paymentMethod,
+//        c.name,
+//        c.phone
+//    )
+//    FROM ShoppingMallPayments p
+//    JOIN p.shoppingMallCustomer c
+//    WHERE p.paidAmount > 0
+//    ORDER BY p.paymentDate DESC
+//""")
+//    List<ShoppingMallPaymentView> getPayments();
 
     @Query("""
         SELECT new org.sb_ibms.dto.PurchaseView(
@@ -93,5 +93,96 @@ public interface ShoppingMallCustomerRepository extends JpaRepository<ShoppingMa
 """)
     OverallSummary getSummary();
 
+    List<ShoppingMallCustomer> findByShoppingMallId(Long shoppingMallId);
+
     ShoppingMallCustomer findByPhone(BigDecimal normalizedPhone);
+
+    ShoppingMallCustomer findByPhoneAndShoppingMallId(BigDecimal phone, Long shoppingMallId);
+
+
+
+    // ==================== Payment & Purchase Views ====================
+
+    @Query("""
+        SELECT new org.sb_ibms.dto.ShoppingMallPaymentView(
+            p.paymentDate, 
+            p.paidAmount, 
+            p.paymentMethod, 
+            c.name, 
+            c.phone
+        )
+        FROM ShoppingMallPayments p 
+        JOIN p.shoppingMallCustomer c 
+        WHERE (:mallId IS NULL OR p.shoppingMallId = :mallId)
+        ORDER BY p.paymentDate DESC
+    """)
+    List<ShoppingMallPaymentView> getPayments(@Param("mallId") Long mallId);
+
+    @Query("""
+        SELECT new org.sb_ibms.dto.PurchaseView(
+            m.date,
+            m.purchaseAmount
+        )
+        FROM ShoppingMallCustomer m
+        WHERE (:mallId IS NULL OR m.shoppingMallId = :mallId)
+          AND m.purchaseAmount > 0
+        ORDER BY m.date DESC
+    """)
+    List<PurchaseView> getPurchases(@Param("mallId") Long mallId);
+
+    @Query("""
+        SELECT new org.sb_ibms.dto.OverallSummary(
+            SUM(m.purchaseAmount),
+            SUM(m.paidAmount),
+            SUM(m.dueAmount)
+        )
+        FROM ShoppingMallCustomer m
+        WHERE (:mallId IS NULL OR m.shoppingMallId = :mallId)
+    """)
+    OverallSummary getSummary(@Param("mallId") Long mallId);
+
+    // ==================== Legacy / Backward Compatibility ====================
+
+    @Query("""
+        SELECT new org.sb_ibms.dto.ShoppingMallPaymentView(
+            p.paymentDate,
+            p.paidAmount,
+            p.paymentMethod,
+            c.name,
+            c.phone
+        )
+        FROM ShoppingMallPayments p
+        JOIN p.shoppingMallCustomer c
+        WHERE p.paidAmount > 0
+        ORDER BY p.paymentDate DESC
+    """)
+    List<ShoppingMallPaymentView> getPayments();   // Keep for backward compatibility
+
+// ==================================== SEARCH METHODS ====================================
+
+    @Query("""
+    SELECT c FROM ShoppingMallCustomer c 
+    WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) 
+       OR CAST(c.phone AS string) LIKE CONCAT('%', :query, '%')
+    ORDER BY c.name ASC
+""")
+    List<ShoppingMallCustomer> searchByNameOrPhone(@Param("query") String query);
+
+    @Query("""
+    SELECT c FROM ShoppingMallCustomer c 
+    WHERE c.shoppingMallId = :mallId
+      AND (LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%')) 
+       OR CAST(c.phone AS string) LIKE CONCAT('%', :query, '%'))
+    ORDER BY c.name ASC
+""")
+    List<ShoppingMallCustomer> searchByNameOrPhoneInMall(
+            @Param("query") String query,
+            @Param("mallId") Long mallId
+    );
+
+
+
+
+
+
 }

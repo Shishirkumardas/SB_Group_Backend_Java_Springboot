@@ -119,7 +119,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/shoppingmall-products/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
                         .requestMatchers("/api/shoppingmall-cashback/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
                         .requestMatchers("/api/shoppingmall-master-data/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shopping-mall-customer/submit").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
                         .requestMatchers("/api/shopping-mall-customer/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
                         .requestMatchers("/api/shoppingMall-payments/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
                         .requestMatchers("/api/pos/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")

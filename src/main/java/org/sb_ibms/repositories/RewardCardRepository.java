@@ -21,4 +21,8 @@ public interface RewardCardRepository extends JpaRepository<RewardCard, Long> {
 
     Optional<RewardCard> findByCardNumber(String cardNumber);
 
+    List<RewardCard> findByShoppingMallId(Long shoppingMallId);
+
+
+
 }

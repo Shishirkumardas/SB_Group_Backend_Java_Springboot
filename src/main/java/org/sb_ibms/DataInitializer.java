@@ -26,13 +26,13 @@ public class DataInitializer {
                 System.out.println("✅ Admin user created");
             }
 
-            if (userRepository.findByEmail("shoppingmall1@example.com").isEmpty()) {
-                User shopping_mall_manager_maona = new User(
-                        "shoppingmall1@example.com",
+            if (userRepository.findByEmail("shoppingmall2@example.com").isEmpty()) {
+                User shopping_mall_manager_maona2 = new User(
+                        "shoppingmall2@example.com",
                         passwordEncoder.encode("shoppingMall123"),
                         Role.SHOPPING_MALL_MANAGER
                 );
-                userRepository.save(shopping_mall_manager_maona);
+                userRepository.save(shopping_mall_manager_maona2);
                 System.out.println("✅ ShoppingMall user created");
             }
 

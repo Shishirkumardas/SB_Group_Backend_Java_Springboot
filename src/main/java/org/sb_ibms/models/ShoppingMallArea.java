@@ -18,6 +18,9 @@ public class ShoppingMallArea {
     private BigDecimal CashbackAmount;
     private BigDecimal PackageQuantity;
 
+    @Column(name = "shopping_mall_id")
+    private Long shoppingMallId;
+
     private BigDecimal purchaseAmount;
     private BigDecimal paidAmount;
     private BigDecimal dueAmount;

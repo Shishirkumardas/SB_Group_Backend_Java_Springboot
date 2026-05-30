@@ -26,6 +26,14 @@ public class ShoppingMallProductController {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ShoppingMallProduct>> searchProducts(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(productService.searchProducts(query.trim()));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ShoppingMallProduct> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
