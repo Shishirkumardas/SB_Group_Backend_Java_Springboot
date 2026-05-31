@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,14 +36,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowCredentials(true);
+
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:3001",
@@ -52,20 +53,20 @@ public class SecurityConfig {
                 "http://192.168.68.107:3001",
                 "http://172.16.0.2:3001",
                 "https://unarticulate-unleached-tracey.ngrok-free.dev"
+                // Add your production frontend URL here later (e.g. Vercel)
         ));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "token"));
-        config.setExposedHeaders(Arrays.asList("Set-Cookie","Authorization"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -74,15 +75,24 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login",
-                                "/api/auth/signup",
-                                "/api/auth/logout").permitAll()
-                        .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers("/api/auth/profile").authenticated()
-                        .requestMatchers(
 
+                        // ==================== PUBLIC AUTH ENDPOINTS ====================
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // ==================== PUBLIC ENDPOINTS ====================
+                        .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
+                        .requestMatchers("/api/payments/**").permitAll()
+                        .requestMatchers("/api/customer/payment-methods").permitAll()
+                        .requestMatchers("/api/customer/**").permitAll()           // if needed
+                        .requestMatchers("/api/areas").permitAll()
+                        .requestMatchers("/api/areas/area").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/bkash/**").permitAll()
+                        .requestMatchers("/images/**", "/uploads/**", "/uploads/products/**").permitAll()
+
+                        // ==================== ADMIN ONLY ====================
+                        .requestMatchers(
                                 "/api/master-data/**",
                                 "/api/cashback/**",
                                 "/api/consumers/**",
@@ -92,45 +102,24 @@ public class SecurityConfig {
                                 "/api/calls/**",
                                 "/api/file-upload/**",
                                 "/api/dashboard/**",
-                                "/api/dashboard/summary",
-                                "/api/areas/area-summary/daily"
+                                "/api/areas/area-summary/daily",
+                                "/api/admin/products",
+                                "/api/admin/products/**",
+                                "/api/admin/orders/**",
+                                "/api/admin/orders/products"
                         ).hasRole("ADMIN")
-                        .requestMatchers("/api/areas/area").permitAll()
-                        .requestMatchers("/api/payments/**").permitAll()
-                        .requestMatchers("/api/customer/payment-methods").permitAll()
-                        .requestMatchers("/api/customer/**").permitAll()
-                        .requestMatchers("/api/areas").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/cart/**").permitAll()
-                        .requestMatchers("/api/uploads/**").permitAll()
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/api/orders/**").permitAll()
-                        .requestMatchers("/api/admin/products").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/products/**").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/orders/**").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/orders/products").hasRole("ADMIN")
-                        .requestMatchers("/uploads/products/**").authenticated()
-                        .requestMatchers("/api/bkash/**").permitAll()
 
-                        //ShoppingMall Roles
-                        .requestMatchers("/api/rewards/").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shoppingmall-products/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shoppingmall-cashback/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shoppingmall-master-data/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shopping-mall-customer/submit").permitAll()
-                        .requestMatchers("/api/shopping-mall-customer/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/shoppingMall-payments/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
-                        .requestMatchers("/api/pos/**").hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
+                        // ==================== SHOPPING MALL MANAGER / ADMIN ====================
+                        .requestMatchers(
+                                "/api/shoppingmall-products/**",
+                                "/api/shoppingmall-master-data/**",
+                                "/api/shoppingMall-payments/**",
+                                "/api/pos/**",
+                                "/api/rewards/**",
+                                "/api/shopping-mall-customer/**"
+                        ).hasAnyRole("ADMIN", "SHOPPING_MALL_MANAGER")
 
-
-
-
-
-
-
-                        // Everything else requires authentication
+                        // ==================== EVERYTHING ELSE REQUIRES AUTH ====================
                         .anyRequest().authenticated()
                 )
 
