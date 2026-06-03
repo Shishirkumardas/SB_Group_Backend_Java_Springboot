@@ -13,5 +13,4 @@ public class BillingRequest {
     private BigDecimal discountAmount;
     private ShoppingMallPaymentMethod paymentMethod;
     private String trxId;
-    private Integer redeemPoints;
 }
