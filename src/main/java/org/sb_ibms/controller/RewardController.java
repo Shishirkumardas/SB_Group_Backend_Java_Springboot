@@ -2,6 +2,7 @@ package org.sb_ibms.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.sb_ibms.BarcodeGenerator;
+import org.sb_ibms.dto.RedeemRequest;
 import org.sb_ibms.dto.RewardCardDTO;
 import org.sb_ibms.models.RewardCard;
 import org.sb_ibms.models.RewardTransaction;
@@ -75,13 +76,24 @@ public class RewardController {
         return ResponseEntity.ok().build();
     }
 
+//    @PostMapping("/redeem")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
+//    public ResponseEntity<Void> redeemPoints(@RequestParam String cardId,
+//                                             @RequestParam int pointsToRedeem,
+//                                             @RequestParam(required = false) String remarks) {
+//        rewardService.redeemPointsForCashback(cardId, pointsToRedeem, remarks);
+//        return ResponseEntity.ok().build();
+//    }
+
     @PostMapping("/redeem")
     @PreAuthorize("hasAnyRole('ADMIN', 'SHOPPING_MALL_MANAGER')")
-    public ResponseEntity<Void> redeemPoints(@RequestParam String cardId,
-                                             @RequestParam int pointsToRedeem,
-                                             @RequestParam(required = false) String remarks) {
-        rewardService.redeemPointsForCashback(cardId, pointsToRedeem, remarks);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> redeemPoints(@RequestBody RedeemRequest request) {
+        rewardService.redeemPointsForCashback(
+                request.getCardId(),
+                request.getPointsToRedeem(),
+                request.getRemarks()
+        );
+        return ResponseEntity.ok("Points redeemed successfully");
     }
 
     @GetMapping("/customer/{customerId}")

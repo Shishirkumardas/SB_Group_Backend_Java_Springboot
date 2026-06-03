@@ -23,6 +23,7 @@ public class RewardService {
     private final RewardTransactionRepository rewardTransactionRepo;
     private final ShoppingMallCustomerRepository shoppingMallCustomerRepository;
     private final ShoppingMallContext shoppingMallContext;
+    private final SmsNotificationService smsNotificationService;
 
     @Transactional
     public RewardCard issueRewardCard(String customerId) {
@@ -54,6 +55,16 @@ public class RewardService {
 
         addTransaction(savedCard, 0, "Reward Card Issued");
 
+        try {
+            String smsMessage = "Congratulations! Your SB Mall Reward Card has been issued.\n" +
+                    "Card No: " + savedCard.getCardNumber() + "\n" +
+                    "Start earning points today!";
+
+            smsNotificationService.sendSmsToCustomer(Long.valueOf(customerId), smsMessage);
+        } catch (Exception e) {
+            System.err.println("Failed to send SMS after reward card issue: " + e.getMessage());
+        }
+
         return savedCard;
     }
 
@@ -79,6 +90,7 @@ public class RewardService {
     public void redeemPointsForCashback(String cardId, int pointsToRedeem, String remarks) {
         RewardCard card = rewardCardRepo.findById(Long.parseLong(cardId))
                 .orElseThrow(() -> new IllegalArgumentException("Reward card not found"));
+        String customerId = card.getCustomer() != null ? String.valueOf(card.getCustomer().getId()) : "Unknown";
 
         Long mallId = shoppingMallContext.getCurrentMallId();
         if (mallId != null && !mallId.equals(card.getShoppingMallId())) {
@@ -92,7 +104,19 @@ public class RewardService {
         card.setTotalPoints(card.getTotalPoints() - pointsToRedeem);
         rewardCardRepo.save(card);
 
+
         addTransaction(card, -pointsToRedeem, "Redeemed for cashback | " + remarks);
+        try {
+
+            String smsMessage = "Your SB Mall Reward Card points has been redeemed.\n" +
+                    "Card No: " + card.getCardNumber() + "\n" +
+                    "Total Points: " + (card.getTotalPoints()) + "\n" +
+                    "Thank you for shopping at SB Mall!";
+
+            smsNotificationService.sendSmsToCustomer(Long.valueOf(customerId), smsMessage);
+        } catch (Exception e) {
+            System.err.println("Failed to send SMS after reward card issue: " + e.getMessage());
+        }
     }
 
     private void addTransaction(RewardCard card, int points, String description) {
