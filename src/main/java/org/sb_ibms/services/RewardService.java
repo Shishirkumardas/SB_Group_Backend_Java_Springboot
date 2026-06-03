@@ -87,35 +87,39 @@ public class RewardService {
     }
 
     @Transactional
-    public void redeemPointsForCashback(String cardId, int pointsToRedeem, String remarks) {
-        RewardCard card = rewardCardRepo.findById(Long.parseLong(cardId))
-                .orElseThrow(() -> new IllegalArgumentException("Reward card not found"));
+    public void redeemPointsForCashback(String cardNumber, int pointsToRedeem, String remarks) {
+        // Find by cardNumber instead of ID
+        RewardCard card = rewardCardRepo.findByCardNumber(cardNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Reward card not found with number: " + cardNumber));
+
         String customerId = card.getCustomer() != null ? String.valueOf(card.getCustomer().getId()) : "Unknown";
 
         Long mallId = shoppingMallContext.getCurrentMallId();
+
         if (mallId != null && !mallId.equals(card.getShoppingMallId())) {
             throw new RuntimeException("Access denied: This reward card belongs to another shopping mall");
         }
 
         if (card.getTotalPoints() < pointsToRedeem) {
-            throw new IllegalArgumentException("Insufficient points");
+            throw new IllegalArgumentException("Insufficient points. Available: " + card.getTotalPoints());
         }
 
         card.setTotalPoints(card.getTotalPoints() - pointsToRedeem);
         rewardCardRepo.save(card);
 
-
         addTransaction(card, -pointsToRedeem, "Redeemed for cashback | " + remarks);
-        try {
 
+        // Send SMS
+        try {
             String smsMessage = "Your SB Mall Reward Card points has been redeemed.\n" +
                     "Card No: " + card.getCardNumber() + "\n" +
-                    "Total Points: " + (card.getTotalPoints()) + "\n" +
+                    "Redeemed: " + pointsToRedeem + " points\n" +
+                    "Remaining Points: " + card.getTotalPoints() + "\n" +
                     "Thank you for shopping at SB Mall!";
 
             smsNotificationService.sendSmsToCustomer(Long.valueOf(customerId), smsMessage);
         } catch (Exception e) {
-            System.err.println("Failed to send SMS after reward card issue: " + e.getMessage());
+            System.err.println("Failed to send SMS after redemption: " + e.getMessage());
         }
     }
 
