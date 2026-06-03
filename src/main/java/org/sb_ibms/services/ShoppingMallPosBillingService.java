@@ -32,6 +32,7 @@ public class ShoppingMallPosBillingService {
     private final ShoppingMallContext shoppingMallContext;
     private final ShoppingMallProductRepository shoppingMallProductRepository;
     private final ShoppingMallProductService productService;
+    private final SmsNotificationService smsNotificationService;
 
     // Delegate to ProductService for better consistency
     public ShoppingMallProduct findByBarcode(String barcode) {
@@ -85,6 +86,31 @@ public class ShoppingMallPosBillingService {
         BigDecimal discount = req.getDiscountAmount() != null ? req.getDiscountAmount() : BigDecimal.ZERO;
         BigDecimal finalAmount = subtotal.subtract(discount);
 
+        //redeem points
+        BigDecimal redeemedAmount = BigDecimal.ZERO;
+        assert customer != null;
+        RewardCard rewardCard = rewardService.getRewardCardByCustomer(String.valueOf(customer.getId()));
+        if (req.getRedeemPoints() != null && req.getRedeemPoints() > 0 && rewardCard != null) {
+            int pointsToRedeem = req.getRedeemPoints();
+
+            if (rewardCard.getTotalPoints() < pointsToRedeem) {
+                throw new RuntimeException("Insufficient reward points. Available: " + rewardCard.getTotalPoints());
+            }
+
+            // Assuming 1 point = 1 TK
+            redeemedAmount = BigDecimal.valueOf(pointsToRedeem);
+            finalAmount = finalAmount.subtract(redeemedAmount);
+
+            // Redeem points
+            rewardService.redeemPointsForCashback(
+                    rewardCard.getCardNumber(),
+                    pointsToRedeem,
+                    "Redeemed during purchase of " + finalAmount.add(redeemedAmount) + " TK"
+            );
+
+            System.out.println("✅ Redeemed " + pointsToRedeem + " points = " + redeemedAmount + " TK");
+        }
+
         if (customer != null) {
             // Create Payment Record
             ShoppingMallPayments payment = new ShoppingMallPayments();
@@ -112,6 +138,13 @@ public class ShoppingMallPosBillingService {
                         RewardCard card = rewardService.getRewardCardByCustomer(String.valueOf(customer.getId()));
                         if (card != null) {
                             rewardService.addPoints(card.getCardNumber(), points, "Sale worth " + finalAmount);
+
+                            // ==================== SEND SMS ====================
+                            String smsMessage = "Congratulations! You earned " + points + " Reward Points.\n" +
+                                    "Total Points: " + (card.getTotalPoints() + points) + "\n" +
+                                    "Thank you for shopping at SB Mall!";
+
+                            smsNotificationService.sendSmsToCustomer(customer.getId(), smsMessage);
                         }
                     } catch (Exception e) {
                         System.err.println("Reward points error: " + e.getMessage());
@@ -123,8 +156,8 @@ public class ShoppingMallPosBillingService {
         return new BillingResponse(
                 "BILL-" + System.currentTimeMillis(),
                 finalAmount,
-                customer != null,
-                customer != null ? customer.getName() : null,
+                true,
+                customer.getName(),
                 "Sale completed successfully"
         );
     }
